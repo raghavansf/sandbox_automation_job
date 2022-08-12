@@ -1,0 +1,22 @@
+{
+  "name": "sandbox_automation_job",
+  "version": "1.0.0",
+  "description": "Sandbox Job Module",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "install": "npm i"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bree": "^9.1.1",
+    "dotenv": "^16.0.1",
+    "pg": "^8.7.3",
+    "querystring": "^0.2.1",
+    "sfcc-ci": "^2.9.1"
+  }
+}
