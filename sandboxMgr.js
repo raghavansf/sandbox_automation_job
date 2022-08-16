@@ -118,6 +118,34 @@ export default class SandboxMgr {
       );
     }
   }
-  async deleteSandbox(sandboxId) {}
-  async renewSandbox(renewRequest) {}
+  /**
+   * Use this method with CAUTION
+   * @param {*} sandboxId
+   * @returns
+   */
+  async deleteSandbox(sandboxId) {
+    const clientMgr = new ClientMgr();
+    try {
+      const accessToken = await clientMgr.getAccessToken();
+      const sandboxDetails = await axios.delete(
+        `${API_SANDBOXES}${sandboxId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      return sandboxDetails;
+    } catch (error) {
+      console.log('Error occured while deleting Sandbox details', error);
+      let sandboxResponse = {
+        data: { code: 404, message: error.stack },
+      };
+      return sandboxResponse;
+    }
+  }
+  async renewSandbox(renewRequest) {
+    console.log('Method to be implemented for RENEWAL!!!');
+  }
 }

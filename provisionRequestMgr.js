@@ -40,7 +40,7 @@ export default class ProvisionRequestMgr {
       );
       if (result.rowCount == 0) {
         console.info('No InProgress requests  available for processing');
-        return;
+        return result;
       } else if (result.rowCount > 0) {
         console.info(
           'Number of InProgress Requests available for processing ',
@@ -50,7 +50,10 @@ export default class ProvisionRequestMgr {
       }
       client.release();
     } catch (error) {
-      console.error(error.stack);
+      console.error(
+        'Error occured while fetching any pending  requests for update ',
+        error.stack
+      );
       return false;
     }
   }
@@ -62,9 +65,10 @@ export default class ProvisionRequestMgr {
         'select id,email_address,additional_contacts from provision_req_t where request_processing_status IN ($1)',
         [REQUEST_PROCESSING_STATUS.NEW]
       );
+      console.log('results returned ', result);
       if (result.rowCount == 0) {
         console.info('No New Provision Request available for processing');
-        return;
+        return result;
       } else if (result.rowCount > 0) {
         console.info(
           'Number of New Provision Requests available for processing ',
@@ -74,7 +78,10 @@ export default class ProvisionRequestMgr {
       }
       client.release();
     } catch (error) {
-      console.error(error.stack);
+      console.error(
+        'Error occured while trying to fetch new provision requests',
+        error.stack
+      );
       return false;
     }
   }
@@ -128,6 +135,33 @@ export default class ProvisionRequestMgr {
       client.release();
     } catch (error) {
       console.error(error.stack);
+      return false;
+    }
+  }
+
+  async findDeleteProvisionRequests() {
+    try {
+      const client = await pgPool.connect();
+      const result = await client.query(
+        'select id,sandbox_id from provision_req_t where request_processing_status IN ($1) AND status=$2',
+        [REQUEST_PROCESSING_STATUS.DELETE, STATUS.ACTIVE]
+      );
+      if (result.rowCount == 0) {
+        console.info('No Delete requests available for processing');
+        return result;
+      } else if (result.rowCount > 0) {
+        console.info(
+          'Number of Delete Requests available for processing ',
+          result.rowCount
+        );
+        return result;
+      }
+      client.release();
+    } catch (error) {
+      console.error(
+        'Error occured while fetching any pending  requests for delete ',
+        error.stack
+      );
       return false;
     }
   }
