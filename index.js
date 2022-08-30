@@ -18,14 +18,13 @@ const bree = new Bree({
   jobs: [
     {
       name: 'sandboxProvisionerJob',
-      interval: '60s',
+      interval: '10s',
     },
     {
       name: 'sandboxRefresherJob',
-      interval: '60s',
+      interval: '120s',
     },
   ],
 });
-console.log('Bree Scheduler for Provisioning Job(s) started!!');
-console.log('Prettier testing..');
+console.log('Bree Scheduler for  Job(s) started!!');
 await bree.start();

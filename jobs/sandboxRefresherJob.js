@@ -6,7 +6,7 @@ async function refreshSandboxStatus() {
   const sandboxMgr = new SandboxMgr();
   const results = await provisionRequestMgr.findRequestInProgress();
   if (results.rowCount <= 0) {
-    return;
+    process.exit();
   }
   for (const element of results.rows) {
     console.log('Sandbox Status to be refreshed ', element.sandbox_id);
