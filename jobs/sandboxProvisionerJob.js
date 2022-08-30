@@ -7,12 +7,13 @@
 import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import {} from 'dotenv/config';
 import SandboxMgr from '../sandboxMgr.js';
+import process from 'process';
 
 async function provisionSandBoxes() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const results = await provisionRequestMgr.findNewProvisionRequests();
   if (results.rowCount <= 0) {
-    return;
+    process.exit();
   }
   console.log(
     'Number of Records found for New Provisioning ',

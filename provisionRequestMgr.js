@@ -65,7 +65,6 @@ export default class ProvisionRequestMgr {
         'select id,email_address,additional_contacts from provision_req_t where request_processing_status IN ($1)',
         [REQUEST_PROCESSING_STATUS.NEW]
       );
-      console.log('results returned ', result);
       if (result.rowCount == 0) {
         console.info('No New Provision Request available for processing');
         return result;
