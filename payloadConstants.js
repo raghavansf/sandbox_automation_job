@@ -25,5 +25,5 @@ export const CLIENT_CREATION_PAYLOAD = {
   roleTenantFilterMap: {},
   password: 'TrialCommerce@2022',
   tokenEndpointAuthMethod: 'client_secret_basic',
-  accessTokenFormat: 'JWT',
+  stateless: true,
 };
