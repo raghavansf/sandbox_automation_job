@@ -64,13 +64,14 @@ export default class SandboxMgr {
   async provisionNewSandbox(provisionRequest) {
     try {
       const clientMgr = new ClientMgr();
-      // once  new client is created we should be using different method for Getting access token not the default ..
+      const newClient = await clientMgr.createNewClient();
+      //TODO: Admin Access token
       const accessToken = await clientMgr.getAccessToken();
       console.log('ProvisionNew Sandbox Started ...');
       let ocapiSettings = SANDBOX_OCAPI_SETTINGS;
       let webdavPermissions = SANDBOX_WEBDAV_PERMISSIONS;
-      ocapiSettings[0]['client_id'] = provisionRequest.clientID;
-      webdavPermissions[0]['client_id'] = provisionRequest.clientID;
+      ocapiSettings[0]['client_id'] = newClient.clientID;
+      webdavPermissions[0]['client_id'] = newClient.clientID;
 
       let provisionRequestPayload = {
         realm: process.env.SFCC_REALM_ID,
@@ -93,8 +94,8 @@ export default class SandboxMgr {
       const sandboxDetails = sandboxInstanceResponse.data.data;
       console.log('Sandbox provisioned details ', sandboxDetails);
       return sandboxDetails;
-    } catch (Error) {
-      console.log('Error occured while provisioning new sandbox ', error.stack);
+    } catch (error) {
+      console.log('Error occured while provisioning new sandbox ', error);
     }
   }
   async configureSandboxWithCode() {
@@ -118,6 +119,34 @@ export default class SandboxMgr {
       );
     }
   }
-  async deleteSandbox(sandboxId) {}
-  async renewSandbox(renewRequest) {}
+  /**
+   * Use this method with CAUTION
+   * @param {*} sandboxId
+   * @returns
+   */
+  async deleteSandbox(sandboxId) {
+    const clientMgr = new ClientMgr();
+    try {
+      const accessToken = await clientMgr.getAccessToken();
+      const sandboxDetails = await axios.delete(
+        `${API_SANDBOXES}${sandboxId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      return sandboxDetails;
+    } catch (error) {
+      console.log('Error occured while deleting Sandbox details', error);
+      let sandboxResponse = {
+        data: { code: 404, message: error.stack },
+      };
+      return sandboxResponse;
+    }
+  }
+  async renewSandbox(renewRequest) {
+    console.log('Method to be implemented for RENEWAL!!!');
+  }
 }
