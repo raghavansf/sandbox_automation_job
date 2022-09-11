@@ -32,7 +32,7 @@ export default class ProvisionRequestMgr {
     try {
       const client = await pgPool.connect();
       const result = await client.query(
-        'select id,sandbox_id,status from provision_req_t where request_processing_status IN ($1,$2)',
+        'select * from provision_req_t where request_processing_status IN ($1,$2)',
         [
           REQUEST_PROCESSING_STATUS.INITIATED,
           REQUEST_PROCESSING_STATUS.PROVISIONED,

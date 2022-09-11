@@ -13,7 +13,12 @@ async function refreshSandboxStatus() {
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
       element.sandbox_id
     );
-    //check for 200 response from axios inside sandboxDetails.data.code..
+
+    if ('started' === sandboxDetails.data.data.state) {
+      const provisionRequest = element;
+      await sandboxMgr.configureSandboxWithUsers(provisionRequest);
+      //TODO: post successful update provision request with User details
+    }
 
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       element.id,
