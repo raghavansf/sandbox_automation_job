@@ -1,14 +1,15 @@
 export const USER_CREATION_PAYLOAD = {
-  mail: 'ns.rags@gmail.com',
-  firstName: 'Rags',
-  lastName: 'NS',
-  displayName: 'NS-Rags-Trial',
-  roles: ['bm-user'],
+  mail: '',
+  firstName: '',
+  lastName: '',
+  displayName: 'Sandbox Trial',
+  roles: ['bm-admin', 'slas-organization-admin'],
   groups: [],
   organizations: [process.env.TRIAL_SANDBOX_ORG_ID],
   primaryOrganization: process.env.TRIAL_SANDBOX_ORG_ID,
   userState: 'ENABLED',
-  password: 'Demandware1!',
+  password: 'Salesforce@2022',
+  roleTenantFilter: {},
 };
 
 export const CLIENT_CREATION_PAYLOAD = {
@@ -26,4 +27,9 @@ export const CLIENT_CREATION_PAYLOAD = {
   password: 'TrialCommerce@2022',
   tokenEndpointAuthMethod: 'client_secret_basic',
   stateless: true,
+};
+
+export const USER_ACTIVATION_PAYLOAD = {
+  userState: 'ENABLED',
+  roleTenantFilter: '',
 };

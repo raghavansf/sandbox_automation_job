@@ -4,13 +4,13 @@ import querystring from 'querystring';
 import {} from 'dotenv/config';
 import { USER_CREATION_PAYLOAD } from './payloadConstants.js';
 import { CLIENT_CREATION_PAYLOAD } from './payloadConstants.js';
+import { USER_ACTIVATION_PAYLOAD } from './payloadConstants.js';
 
 const ACCOUNTMANAGER_TOKEN =
   process.env.ACCOUNT_MANAGER_HOST + process.env.ACCOUNT_MANAGER_TOKEN_PATH;
 const NEW_API_CLIENT =
   process.env.ACCOUNT_MANAGER_HOST + process.env.API_CLIENT_CREATION_PATH;
-const NEW_USER =
-  process.env.ACCOUNT_MANAGER_HOST + process.env.USER_CREATION_PATH;
+const USER_ENDPOINT = process.env.ACCOUNT_MANAGER_HOST + process.env.USERS_URI;
 
 const mgrClientCredentials = {
   clientID: process.env.ADMIN_CLIENT_ID,
@@ -19,15 +19,43 @@ const mgrClientCredentials = {
 };
 
 export default class ClientMgr {
-  async createUsers(usersToCreate, activateUser = true) {
+  async createUsers(usersToCreate) {
     try {
       const adminAccessToken = await this.getAccessToken();
-      const userResponse = await axios.post(NEW_USER, USER_CREATION_PAYLOAD, {
-        headers: { Authorization: `Bearer ${adminAccessToken}` },
-      });
-      console.log('CreateUsers:::User Created successfully ', userResponse);
+      for (const user of usersToCreate.users) {
+        const newUserPayload = USER_CREATION_PAYLOAD;
+        newUserPayload.mail = user.mail;
+        newUserPayload.firstName = user.firstName;
+        newUserPayload.lastName = user.lastName;
+        let roleTenantFilters = '';
+        for (const role of USER_CREATION_PAYLOAD.roles) {
+          roleTenantFilters += `${role}:${user.sandboxRealmInstance};`;
+        }
+        newUserPayload.roleTenantFilter = roleTenantFilters;
+        const userCreationResponse = await axios.post(
+          USER_ENDPOINT,
+          newUserPayload,
+          {
+            headers: { Authorization: `Bearer ${adminAccessToken}` },
+          }
+        );
+        /*
+        const activateUserPayload = USER_ACTIVATION_PAYLOAD;
+        activateUserPayload.roleTenantFilter = roleTenantFilters;
+
+        await axios.put(
+          USER_ENDPOINT + `/${userCreationResponse.data.id}`,
+          activateUserPayload,
+          {
+            headers: { Authorization: `Bearer ${adminAccessToken}` },
+          }
+        );
+        */
+      }
+
+      return {};
     } catch (error) {
-      console.log('Error occured during User Creation for APIClient', error);
+      console.log('Error occured during User Creation for Users', error);
     }
   }
   async createNewClient() {
@@ -50,8 +78,6 @@ export default class ClientMgr {
       console.log('New API Client created successfully', newClientDetails);
 
       return newClientDetails;
-
-      console.log('new API Client response ', response);
     } catch (error) {
       console.log('Error occured during  New API Client Creation ', error);
     }

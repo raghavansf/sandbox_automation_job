@@ -1,71 +1,18 @@
 // Mgr class for all sandbox calls
 import axios from 'axios';
 import ClientMgr from './clientMgr.js';
+import { SANDBOX_RESOURCE_PROFILES } from './sandboxConstants.js';
+import { SANDBOX_WEBDAV_PERMISSIONS } from './sandboxConstants.js';
+import { SANDBOX_OCAPI_SETTINGS } from './sandboxConstants.js';
 
 const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
 const API_SANDBOXES = API_BASE + '/sandboxes/';
-
-const SANDBOX_RESOURCE_PROFILES = {
-  MEDIUM: 'medium',
-  LARGE: 'large',
-  XLARGE: 'xlarge',
-};
-
-const SANDBOX_WEBDAV_PERMISSIONS = [
-  {
-    client_id: 'CLIENTID',
-    permissions: [
-      { path: '/impex', operations: ['read_write'] },
-      { path: '/cartridges', operations: ['read_write'] },
-      { path: '/static', operations: ['read_write'] },
-    ],
-  },
-];
-
-const SANDBOX_OCAPI_SETTINGS = [
-  {
-    client_id: 'CLIENTID',
-    resources: [
-      {
-        resource_id: '/code_versions',
-        methods: ['get'],
-        read_attributes: '(**)',
-        write_attributes: '(**)',
-      },
-      {
-        resource_id: '/code_versions/*',
-        methods: ['patch', 'delete'],
-        read_attributes: '(**)',
-        write_attributes: '(**)',
-      },
-      {
-        resource_id: '/jobs/*/executions',
-        methods: ['post'],
-        read_attributes: '(**)',
-        write_attributes: '(**)',
-      },
-      {
-        resource_id: '/jobs/*/executions/*',
-        methods: ['get'],
-        read_attributes: '(**)',
-        write_attributes: '(**)',
-      },
-      {
-        resource_id: '/sites/*/cartridges',
-        methods: ['post'],
-        read_attributes: '(**)',
-        write_attributes: '(**)',
-      },
-    ],
-  },
-];
 
 export default class SandboxMgr {
   async provisionNewSandbox(provisionRequest) {
     try {
       const clientMgr = new ClientMgr();
       const newClient = await clientMgr.createNewClient();
-      //TODO: Admin Access token
       const accessToken = await clientMgr.getAccessToken();
       console.log('ProvisionNew Sandbox Started ...');
       let ocapiSettings = SANDBOX_OCAPI_SETTINGS;
@@ -77,7 +24,7 @@ export default class SandboxMgr {
         realm: process.env.SFCC_REALM_ID,
         resourceProfile: SANDBOX_RESOURCE_PROFILES.MEDIUM,
         autoScheduled: true,
-        ttl: 24,
+        ttl: process.env.SANDBOX_TTL,
         settings: {
           ocapi: ocapiSettings,
           webdav: webdavPermissions,
@@ -90,8 +37,8 @@ export default class SandboxMgr {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      console.log('provision request payload', provisionRequestPayload);
       const sandboxDetails = sandboxInstanceResponse.data.data;
+      //TODO:Append clientID/password with Sandbox Details or separate Column?? for future reference
       console.log('Sandbox provisioned details ', sandboxDetails);
       return sandboxDetails;
     } catch (error) {
@@ -101,8 +48,27 @@ export default class SandboxMgr {
   async configureSandboxWithCode() {
     //TODO: implementation
   }
-  async configureSandboxWithUsers() {
-    //TODO: implementation
+  async configureSandboxWithUsers(provisionRequestDetails) {
+    try {
+      const clientMgr = new ClientMgr();
+      const sandboxDetails = JSON.parse(
+        provisionRequestDetails.sandbox_details
+      );
+
+      const usersToCreate = {
+        users: [
+          {
+            firstName: provisionRequestDetails.first_name,
+            lastName: provisionRequestDetails.last_name,
+            mail: provisionRequestDetails.email_address,
+            sandboxRealmInstance: `${sandboxDetails.realm}_${sandboxDetails.instance}`,
+          },
+        ],
+      };
+      const userCreationResponse = await clientMgr.createUsers(usersToCreate);
+    } catch (error) {
+      console.log('Error occured while provisioning users for sandbox', error);
+    }
   }
   async getSandboxDetail(sandboxId) {
     const clientMgr = new ClientMgr();
@@ -111,12 +77,10 @@ export default class SandboxMgr {
       const sandboxDetails = await axios.get(`${API_SANDBOXES}${sandboxId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+      console.log('Inside get sandbox details ', sandboxDetails);
       return sandboxDetails;
     } catch (error) {
-      console.log(
-        'Error occured while retrieiving Sandbox details',
-        error.stack
-      );
+      console.log('Error occured while retrieiving Sandbox details', error);
     }
   }
   /**
