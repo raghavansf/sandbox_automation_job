@@ -4,9 +4,12 @@ import ClientMgr from './clientMgr.js';
 import { SANDBOX_RESOURCE_PROFILES } from './sandboxConstants.js';
 import { SANDBOX_WEBDAV_PERMISSIONS } from './sandboxConstants.js';
 import { SANDBOX_OCAPI_SETTINGS } from './sandboxConstants.js';
+import { SITE_ARCHIVE_PAYLOAD } from './sandboxConstants.js';
 
 const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
 const API_SANDBOXES = API_BASE + '/sandboxes/';
+const OCAPI_SITE_IMPORT_URI = process.env.OCAPI_SITE_IMPORT_URI;
+const OCAPI_JOB_EXECUTION_STATUS_URI = process.env.OCAPI_JOB_EXECUTION_STATUS;
 
 export default class SandboxMgr {
   async provisionNewSandbox(provisionRequest) {
@@ -38,6 +41,11 @@ export default class SandboxMgr {
         }
       );
       const sandboxDetails = sandboxInstanceResponse.data.data;
+      sandboxDetails.clientConfig = {
+        clientID: newClient.clientID,
+        clientSecret: newClient.clientSecret,
+        clientName: newClient.clientName,
+      };
       //TODO:Append clientID/password with Sandbox Details or separate Column?? for future reference
       console.log('Sandbox provisioned details ', sandboxDetails);
       return sandboxDetails;
@@ -45,8 +53,62 @@ export default class SandboxMgr {
       console.log('Error occured while provisioning new sandbox ', error);
     }
   }
-  async configureSandboxWithCode() {
-    //TODO: implementation
+  async configureSandboxWithCode(provisionRequest) {
+    //TODO:Manually upload code
+
+    try {
+      const clientMgr = new ClientMgr();
+      const sandboxDetails = JSON.parse(provisionRequest.sandbox_details);
+      const clientCredentials = sandboxDetails.clientConfig;
+      clientCredentials.grantType = { grant_type: 'client_credentials' };
+      console.log(
+        'Client Credentials from Provisioned Sandbox ',
+        clientCredentials
+      );
+      const clientAccessToken = await clientMgr.getAccessTokenByCredentials(
+        clientCredentials
+      );
+
+      //trigger OCAPI Site Import Job with File name
+      const jobExecutionResponse = await axios.post(
+        `${sandboxDetails.links.ocapi}`.concat(OCAPI_SITE_IMPORT_URI),
+        SITE_ARCHIVE_PAYLOAD,
+        {
+          headers: { Authorization: `Bearer ${clientAccessToken}` },
+        }
+      );
+      if (202 === jobExecutionResponse.status) {
+        console.log(
+          'SiteImport Job Launched for Execution',
+          jobExecutionResponse.data.id
+        );
+        let jobStatus = jobExecutionResponse.data.status;
+        while ('PENDING' === jobStatus) {
+          const response = await axios.get(
+            `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
+            {
+              headers: { Authorization: `Bearer ${clientAccessToken}` },
+            }
+          );
+          if (
+            'finished' === response.data.execution_status &&
+            ('OK' == response.data.status || 'ERROR' == response.data.status)
+          ) {
+            console.log('job execution completed ', response);
+            jobStatus = response.data.status;
+          } else {
+            setTimeout(function () {
+              console.log(
+                'Job exceution Not Completed hence waiting ......',
+                response.data.status
+              );
+            }, 1000);
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Error occured during Site Import', error);
+    }
   }
   async configureSandboxWithUsers(provisionRequestDetails) {
     try {
@@ -74,10 +136,12 @@ export default class SandboxMgr {
     const clientMgr = new ClientMgr();
     try {
       const accessToken = await clientMgr.getAccessToken();
-      const sandboxDetails = await axios.get(`${API_SANDBOXES}${sandboxId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      console.log('Inside get sandbox details ', sandboxDetails);
+      const { data: sandboxDetails } = await axios.get(
+        `${API_SANDBOXES}${sandboxId}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
       return sandboxDetails;
     } catch (error) {
       console.log('Error occured while retrieiving Sandbox details', error);

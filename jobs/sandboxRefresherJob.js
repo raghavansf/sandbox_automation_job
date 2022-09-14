@@ -13,16 +13,22 @@ async function refreshSandboxStatus() {
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
       element.sandbox_id
     );
+    console.log('Sandbox details ', sandboxDetails);
 
-    if ('started' === sandboxDetails.data.data.state) {
+    if ('started' === sandboxDetails.data.state) {
+      //TODO:Need to  see if code is already imported , avoid importing again
       const provisionRequest = element;
-      await sandboxMgr.configureSandboxWithUsers(provisionRequest);
+      //TODO:Uncomment below once other activities are completed
+      //  await sandboxMgr.configureSandboxWithUsers(provisionRequest);
       //TODO: post successful update provision request with User details
+      // await sandboxMgr.configureSandboxWithCode(provisionRequest);
     }
+
+    // See how we can retain Client Config  as newly updated Sandbox details will not contain
 
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       element.id,
-      sandboxDetails.data.data
+      sandboxDetails.data
     );
   }
 }
