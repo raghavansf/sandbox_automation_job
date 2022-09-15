@@ -33,14 +33,14 @@ export default class SandboxMgr {
           webdav: webdavPermissions,
         },
       };
-      const sandboxInstanceResponse = await axios.post(
+      const { data: sandboxInstanceResponse } = await axios.post(
         API_SANDBOXES,
         provisionRequestPayload,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      const sandboxDetails = sandboxInstanceResponse.data.data;
+      const sandboxDetails = sandboxInstanceResponse.data;
       sandboxDetails.clientConfig = {
         clientID: newClient.clientID,
         clientSecret: newClient.clientSecret,
@@ -84,23 +84,23 @@ export default class SandboxMgr {
         );
         let jobStatus = jobExecutionResponse.data.status;
         while ('PENDING' === jobStatus) {
-          const response = await axios.get(
+          const { data: response } = await axios.get(
             `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
             {
               headers: { Authorization: `Bearer ${clientAccessToken}` },
             }
           );
           if (
-            'finished' === response.data.execution_status &&
-            ('OK' == response.data.status || 'ERROR' == response.data.status)
+            'finished' === response.execution_status &&
+            ('OK' == response.status || 'ERROR' == response.status)
           ) {
             console.log('job execution completed ', response);
-            jobStatus = response.data.status;
+            jobStatus = response.status;
           } else {
             setTimeout(function () {
               console.log(
                 'Job exceution Not Completed hence waiting ......',
-                response.data.status
+                response.status
               );
             }, 1000);
           }

@@ -61,7 +61,7 @@ export default class ClientMgr {
   async createNewClient() {
     try {
       const adminAccessToken = await this.getAccessToken();
-      const response = await axios.post(
+      const { data: response } = await axios.post(
         NEW_API_CLIENT,
         CLIENT_CREATION_PAYLOAD,
         {
@@ -69,10 +69,10 @@ export default class ClientMgr {
         }
       );
       const newClientDetails = {
-        clientID: response.data.id,
-        clientName: response.data.name,
+        clientID: response.id,
+        clientName: response.name,
         clientSecret: CLIENT_CREATION_PAYLOAD.password,
-        links: response.data.links,
+        links: response.links,
         grantType: { grant_type: 'client_credentials' },
       };
       console.log('New API Client created successfully', newClientDetails);
@@ -84,7 +84,7 @@ export default class ClientMgr {
   }
   async getAccessToken() {
     try {
-      const response = await axios.post(
+      const { data: response } = await axios.post(
         ACCOUNTMANAGER_TOKEN,
         querystring.stringify(mgrClientCredentials.grantType),
         {
@@ -98,7 +98,7 @@ export default class ClientMgr {
           },
         }
       );
-      const accessToken = response.data.access_token;
+      const accessToken = response.access_token;
       return accessToken;
     } catch (error) {
       console.log('Error occured during Admin Access Token retrieval', error);
@@ -107,7 +107,7 @@ export default class ClientMgr {
   async getAccessTokenByCredentials(clientCredentials) {
     try {
       console.log('Client Credentials ', clientCredentials);
-      const response = await axios.post(
+      const { data: response } = await axios.post(
         ACCOUNTMANAGER_TOKEN,
         querystring.stringify(clientCredentials.grantType),
         {
@@ -121,7 +121,7 @@ export default class ClientMgr {
           },
         }
       );
-      const accessToken = response.data.access_token;
+      const accessToken = response.access_token;
       return accessToken;
     } catch (error) {
       console.log(
