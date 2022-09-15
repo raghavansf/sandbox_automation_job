@@ -7,15 +7,15 @@ async function createAPIClients() {
     const ClientCredentials = {
       clientID: process.env.ADMIN_CLIENT_ID,
       clientSecret: process.env.ADMIN_CLIENT_PASSWORD,
-      grantType: { grant_type: 'client_credentials' },
+      grantType: `grant_type=client_credentials`,
     };
     const clientMgr = new ClientMgr();
-    const accessToken = await clientMgr.getAccessToken();
-    console.log('Access Token ', accessToken);
-    const credentialAccessToken = await clientMgr.getAccessTokenByCredentials(
+    const adminAccessToken = await clientMgr.getAccessToken();
+    console.log('Admin Access Token ', adminAccessToken);
+    const accessToken = await clientMgr.getAccessTokenByCredentials(
       ClientCredentials
     );
-    console.log('Client Credentials Access Token ', credentialAccessToken);
+    console.log(' Access Token ', accessToken);
   } catch (Error) {
     console.log('Error occured as part of Client creation', error);
   }

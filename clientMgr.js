@@ -1,22 +1,16 @@
 //Abstraction of AccountMgr to  provision clients
 import axios from 'axios';
-import querystring from 'querystring';
 import {} from 'dotenv/config';
 import { USER_CREATION_PAYLOAD } from './payloadConstants.js';
 import { CLIENT_CREATION_PAYLOAD } from './payloadConstants.js';
 import { USER_ACTIVATION_PAYLOAD } from './payloadConstants.js';
+import { ADMIN_CLIENT_CREDENTIALS_PAYLOAD } from './payloadConstants.js';
 
 const ACCOUNTMANAGER_TOKEN =
   process.env.ACCOUNT_MANAGER_HOST + process.env.ACCOUNT_MANAGER_TOKEN_PATH;
 const NEW_API_CLIENT =
   process.env.ACCOUNT_MANAGER_HOST + process.env.API_CLIENT_CREATION_PATH;
 const USER_ENDPOINT = process.env.ACCOUNT_MANAGER_HOST + process.env.USERS_URI;
-
-const mgrClientCredentials = {
-  clientID: process.env.ADMIN_CLIENT_ID,
-  clientSecret: process.env.ADMIN_CLIENT_PASSWORD,
-  grantType: { grant_type: 'client_credentials' },
-};
 
 export default class ClientMgr {
   async createUsers(usersToCreate) {
@@ -73,7 +67,7 @@ export default class ClientMgr {
         clientName: response.name,
         clientSecret: CLIENT_CREATION_PAYLOAD.password,
         links: response.links,
-        grantType: { grant_type: 'client_credentials' },
+        grantType: `grant_type=client_credentials`,
       };
       console.log('New API Client created successfully', newClientDetails);
 
@@ -86,15 +80,15 @@ export default class ClientMgr {
     try {
       const { data: response } = await axios.post(
         ACCOUNTMANAGER_TOKEN,
-        querystring.stringify(mgrClientCredentials.grantType),
+        ADMIN_CLIENT_CREDENTIALS_PAYLOAD.grantType,
         {
           headers: {
             Accept: 'application.json',
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           auth: {
-            username: mgrClientCredentials.clientID,
-            password: mgrClientCredentials.clientSecret,
+            username: ADMIN_CLIENT_CREDENTIALS_PAYLOAD.clientID,
+            password: ADMIN_CLIENT_CREDENTIALS_PAYLOAD.clientSecret,
           },
         }
       );
@@ -106,10 +100,9 @@ export default class ClientMgr {
   }
   async getAccessTokenByCredentials(clientCredentials) {
     try {
-      console.log('Client Credentials ', clientCredentials);
       const { data: response } = await axios.post(
         ACCOUNTMANAGER_TOKEN,
-        querystring.stringify(clientCredentials.grantType),
+        clientCredentials.grantType,
         {
           headers: {
             Accept: 'application.json',
