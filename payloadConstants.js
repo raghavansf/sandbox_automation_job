@@ -33,3 +33,9 @@ export const USER_ACTIVATION_PAYLOAD = {
   userState: 'ENABLED',
   roleTenantFilter: '',
 };
+
+export const ADMIN_CLIENT_CREDENTIALS_PAYLOAD = {
+  clientID: process.env.ADMIN_CLIENT_ID,
+  clientSecret: process.env.ADMIN_CLIENT_PASSWORD,
+  grantType: `grant_type=client_credentials`,
+};

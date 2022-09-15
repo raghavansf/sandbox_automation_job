@@ -16,7 +16,6 @@ export default class SandboxMgr {
     try {
       const clientMgr = new ClientMgr();
       const newClient = await clientMgr.createNewClient();
-      const accessToken = await clientMgr.getAccessToken();
       console.log('ProvisionNew Sandbox Started ...');
       let ocapiSettings = SANDBOX_OCAPI_SETTINGS;
       let webdavPermissions = SANDBOX_WEBDAV_PERMISSIONS;
@@ -33,6 +32,7 @@ export default class SandboxMgr {
           webdav: webdavPermissions,
         },
       };
+      const accessToken = await clientMgr.getAccessToken();
       const { data: sandboxInstanceResponse } = await axios.post(
         API_SANDBOXES,
         provisionRequestPayload,
@@ -60,7 +60,7 @@ export default class SandboxMgr {
       const clientMgr = new ClientMgr();
       const sandboxDetails = JSON.parse(provisionRequest.sandbox_details);
       const clientCredentials = sandboxDetails.clientConfig;
-      clientCredentials.grantType = { grant_type: 'client_credentials' };
+      clientCredentials.grantType = `grant_type=client_credentials`;
       console.log(
         'Client Credentials from Provisioned Sandbox ',
         clientCredentials
