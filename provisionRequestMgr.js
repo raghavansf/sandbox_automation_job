@@ -1,6 +1,8 @@
 //DAO class for Looking up pending provision request /update provisionrequest status
 import {} from 'dotenv/config';
 import pg from 'pg';
+import { REQUEST_PROCESSING_STATUS } from './constants.js';
+import { STATUS } from './constants.js';
 const { Pool } = pg;
 
 const pgPool = new Pool({
@@ -10,23 +12,6 @@ const pgPool = new Pool({
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
 });
-
-const REQUEST_PROCESSING_STATUS = {
-  INITIATED: 'SANDBOX_INITIATED',
-  DELETED: 'SANDBOX_DELETED',
-  PROVISIONED: 'SANDBOX_PROVISIONED',
-  NEW: 'NEW',
-  RENEW: 'RENEW',
-  DELETE: 'DELETE',
-};
-
-const STATUS = {
-  REQUESTED: 'REQUESTED',
-  FAILED: 'FAILED',
-  ACTIVE: 'ACTIVE',
-  EXPIRED: 'EXPIRED',
-};
-
 export default class ProvisionRequestMgr {
   async findRequestInProgress() {
     try {
