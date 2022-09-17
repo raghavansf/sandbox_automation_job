@@ -54,12 +54,11 @@ export default class SandboxMgr {
       console.log('Error occured while provisioning new sandbox ', error);
     }
   }
-  async configureSandboxWithCode(provisionRequest) {
+  async configureSandboxWithCode(sandboxDetails) {
     //TODO:Manually upload code
 
     try {
       const clientMgr = new ClientMgr();
-      const sandboxDetails = JSON.parse(provisionRequest.sandbox_details);
       const clientCredentials = sandboxDetails.clientConfig;
       clientCredentials.grantType = `grant_type=client_credentials`;
       console.log(
@@ -111,12 +110,9 @@ export default class SandboxMgr {
       console.log('Error occured during Site Import', error);
     }
   }
-  async configureSandboxWithUsers(provisionRequestDetails) {
+  async configureSandboxWithUsers(provisionRequestDetails, sandboxDetails) {
     try {
       const clientMgr = new ClientMgr();
-      const sandboxDetails = JSON.parse(
-        provisionRequestDetails.sandbox_details
-      );
 
       const usersToCreate = {
         users: [

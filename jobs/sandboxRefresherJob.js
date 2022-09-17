@@ -15,19 +15,17 @@ async function refreshSandboxStatus() {
       element.sandbox_id
     );
     const provisionedRequest = JSON.parse(element.sandbox_details);
-    console.log('JSON parsed ProvisionRequest', provisionedRequest);
 
     if ('started' === sandboxDetails.data.state) {
-      //TODO:Need to  see if code is already imported , avoid importing again
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
         provisionedRequest.clientConfig.clientID,
         `${provisionedRequest.realm}_${provisionedRequest.instance}`
       );
-      //TODO:Uncomment below once other activities are completed
-      //  await sandboxMgr.configureSandboxWithUsers(provisionRequest);
+      //TODO:Uncomment below once other activities are completed ,  test !!!
+      //  await sandboxMgr.configureSandboxWithUsers(element,provisionedRequest);
       //TODO: post successful update provision request with User details
-      // await sandboxMgr.configureSandboxWithCode(provisionRequest);
+      // await sandboxMgr.configureSandboxWithCode(provisionedRequest);
     }
 
     // See how we can retain Client Config  as newly updated Sandbox details will not contain
