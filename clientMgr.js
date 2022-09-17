@@ -10,6 +10,8 @@ const ACCOUNTMANAGER_TOKEN =
   process.env.ACCOUNT_MANAGER_HOST + process.env.ACCOUNT_MANAGER_TOKEN_PATH;
 const NEW_API_CLIENT =
   process.env.ACCOUNT_MANAGER_HOST + process.env.API_CLIENT_CREATION_PATH;
+const UPDATE_API_CLIENT =
+  process.env.ACCOUNT_MANAGER_HOST + process.env.API_CLIENT_UPDATION_PATH;
 const USER_ENDPOINT = process.env.ACCOUNT_MANAGER_HOST + process.env.USERS_URI;
 
 export default class ClientMgr {
@@ -52,6 +54,29 @@ export default class ClientMgr {
       console.log('Error occured during User Creation for Users', error);
     }
   }
+  async updateClientRoles(clientId, sandboxRealmInstance) {
+    try {
+      const adminAccessToken = await this.getAccessToken();
+      let roleTenantFilters = '';
+      for (const role of CLIENT_CREATION_PAYLOAD.roles) {
+        roleTenantFilters += `${role}:${sandboxRealmInstance};`;
+      }
+      const { data: response } = await axios.put(
+        `${UPDATE_API_CLIENT}/${clientId}`,
+        { roleTenantFilter: roleTenantFilters, stateless: true },
+        {
+          headers: { Authorization: `Bearer ${adminAccessToken}` },
+        }
+      );
+      console.log(
+        'Role Assignments Updated Successfully for clientID',
+        clientId
+      );
+    } catch (error) {
+      console.log('Error occured while updating RoleAssignments', error);
+    }
+  }
+
   async createNewClient() {
     try {
       const adminAccessToken = await this.getAccessToken();

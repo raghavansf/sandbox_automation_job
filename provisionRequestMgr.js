@@ -12,6 +12,7 @@ const pgPool = new Pool({
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
 });
+
 export default class ProvisionRequestMgr {
   async findRequestInProgress() {
     try {

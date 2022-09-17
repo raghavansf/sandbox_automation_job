@@ -1,3 +1,4 @@
+import ClientMgr from '../clientMgr.js';
 import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import SandboxMgr from '../sandboxMgr.js';
 
@@ -13,11 +14,16 @@ async function refreshSandboxStatus() {
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
       element.sandbox_id
     );
-    console.log('Sandbox details ', sandboxDetails);
+    const provisionedRequest = JSON.parse(element.sandbox_details);
+    console.log('JSON parsed ProvisionRequest', provisionedRequest);
 
     if ('started' === sandboxDetails.data.state) {
       //TODO:Need to  see if code is already imported , avoid importing again
-      const provisionRequest = element;
+      const clientMgr = new ClientMgr();
+      await clientMgr.updateClientRoles(
+        provisionedRequest.clientConfig.clientID,
+        `${provisionedRequest.realm}_${provisionedRequest.instance}`
+      );
       //TODO:Uncomment below once other activities are completed
       //  await sandboxMgr.configureSandboxWithUsers(provisionRequest);
       //TODO: post successful update provision request with User details
