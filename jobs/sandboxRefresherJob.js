@@ -14,7 +14,9 @@ async function refreshSandboxStatus() {
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
       element.sandbox_id
     );
+    console.log('SandboxDetails ', sandboxDetails);
     const provisionedRequest = JSON.parse(element.sandbox_details);
+    sandboxDetails.data.clientConfig = provisionedRequest.clientConfig;
 
     if ('started' === sandboxDetails.data.state) {
       const clientMgr = new ClientMgr();

@@ -4,13 +4,19 @@ import pg from 'pg';
 import { REQUEST_PROCESSING_STATUS } from './constants.js';
 import { STATUS } from './constants.js';
 const { Pool } = pg;
+const dbURL = process.env.DATABASE_URL;
 
+/*
 const pgPool = new Pool({
   user: process.env.PGUSER,
   host: process.env.PGHOST,
   database: process.env.PGDATABSE,
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
+});
+*/
+const pgPool = new Pool({
+  dbURL,
 });
 
 export default class ProvisionRequestMgr {
