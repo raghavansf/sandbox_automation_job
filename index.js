@@ -22,7 +22,7 @@ const bree = new Bree({
     },
     {
       name: 'sandboxRefresherJob',
-      interval: '120s',
+      interval: '40s',
     },
   ],
 });

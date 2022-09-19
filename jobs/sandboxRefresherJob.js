@@ -30,13 +30,12 @@ async function refreshSandboxStatus() {
       // await sandboxMgr.configureSandboxWithCode(provisionedRequest);
     }
 
-    // See how we can retain Client Config  as newly updated Sandbox details will not contain
-
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       element.id,
       sandboxDetails.data
     );
   }
+  process.exit();
 }
 
 refreshSandboxStatus();

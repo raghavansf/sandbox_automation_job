@@ -16,7 +16,7 @@ const pgPool = new Pool({
 });
 */
 const pgPool = new Pool({
-  dbURL,
+  connectionString: dbURL,
 });
 
 export default class ProvisionRequestMgr {
