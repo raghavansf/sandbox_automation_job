@@ -27,4 +27,4 @@ const bree = new Bree({
   ],
 });
 console.log('Bree Scheduler for  Job(s) started!!');
-await bree.start();
+//await bree.start();

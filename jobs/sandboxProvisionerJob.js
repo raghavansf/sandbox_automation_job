@@ -42,6 +42,7 @@ async function provisionSandBoxes() {
       sandboxDetails
     );
   }
+  process.exit();
 }
 
 provisionSandBoxes();
