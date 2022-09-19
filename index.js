@@ -14,6 +14,8 @@
  */
 
 import Bree from 'bree';
+import Graceful from '@ladjs/graceful';
+
 const bree = new Bree({
   jobs: [
     {
@@ -27,4 +29,6 @@ const bree = new Bree({
   ],
 });
 console.log('Bree Scheduler for  Job(s) started!!');
-//await bree.start();
+const graceful = new Graceful({ brees: [bree] });
+graceful.listen();
+await bree.start();
