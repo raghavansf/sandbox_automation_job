@@ -7,9 +7,7 @@ async function refreshSandboxStatus() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const sandboxMgr = new SandboxMgr();
   const results = await provisionRequestMgr.findRequestInProgress();
-  if (results.rowCount <= 0) {
-    process.exit();
-  }
+
   for (const element of results.rows) {
     console.log('Sandbox Status to be refreshed ', element.sandbox_id);
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
@@ -31,13 +29,11 @@ async function refreshSandboxStatus() {
       //  await sandboxMgr.configureSandboxWithUsers(element,provisionedRequest);
       //TODO: post successful update provision request with User details
       // await sandboxMgr.configureSandboxWithCode(provisionedRequest);
-      await provisionRequestMgr.updateProvisionRequestWithDetails(
-        element.id,
-        sandboxDetails.data
-      );
-    } else {
-      console.log('No records for refresh available');
     }
+    await provisionRequestMgr.updateProvisionRequestWithDetails(
+      element.id,
+      sandboxDetails.data
+    );
   }
   process.exit();
 }
