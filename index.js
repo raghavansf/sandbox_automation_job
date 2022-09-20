@@ -15,6 +15,8 @@
 
 import Bree from 'bree';
 import Graceful from '@ladjs/graceful';
+import express from 'express';
+const app = express();
 
 const bree = new Bree({
   jobs: [
@@ -29,7 +31,9 @@ const bree = new Bree({
   ],
 });
 var port = process.env.PORT || 5000;
-
+app.listen(port, () => {
+  console.log(`Our JobApp is running on port ${port}`);
+});
 console.log('Bree Scheduler for  Job(s) started!!');
 const graceful = new Graceful({ brees: [bree] });
 graceful.listen();
