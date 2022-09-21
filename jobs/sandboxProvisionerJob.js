@@ -12,6 +12,7 @@ import process from 'process';
 async function provisionSandBoxes() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const results = await provisionRequestMgr.findNewProvisionRequests();
+
   if (results.rowCount <= 0) {
     process.exit();
   }
@@ -42,6 +43,7 @@ async function provisionSandBoxes() {
       sandboxDetails
     );
   }
+
   process.exit();
 }
 
