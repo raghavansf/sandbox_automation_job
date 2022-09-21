@@ -35,6 +35,7 @@ async function refreshSandboxStatus() {
       sandboxDetails.data
     );
   }
+
   process.exit();
 }
 

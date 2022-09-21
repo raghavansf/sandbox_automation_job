@@ -5,6 +5,7 @@ import { REQUEST_PROCESSING_STATUS } from './constants.js';
 import { STATUS } from './constants.js';
 const { Pool } = pg;
 const dbURL = process.env.DATABASE_URL;
+const limitRowsCount = process.env.ROW_LIMIT;
 
 /*
 const pgPool = new Pool({
@@ -24,7 +25,7 @@ export default class ProvisionRequestMgr {
     try {
       const client = await pgPool.connect();
       const result = await client.query(
-        'select * from provision_req_t where request_processing_status IN ($1,$2)',
+        `select * from provision_req_t where request_processing_status IN ($1,$2) limit ${limitRowsCount}`,
         [
           REQUEST_PROCESSING_STATUS.INITIATED,
           REQUEST_PROCESSING_STATUS.PROVISIONED,
@@ -42,9 +43,9 @@ export default class ProvisionRequestMgr {
       }
       client.release();
     } catch (error) {
-      console.error(
+      console.log(
         'Error occured while fetching any pending  requests for update ',
-        error.stack
+        error
       );
       return false;
     }
@@ -54,7 +55,7 @@ export default class ProvisionRequestMgr {
     try {
       const client = await pgPool.connect();
       const result = await client.query(
-        'select id,email_address,additional_contacts from provision_req_t where request_processing_status IN ($1)',
+        `select id,email_address,additional_contacts from provision_req_t where request_processing_status IN ($1) limit ${limitRowsCount}`,
         [REQUEST_PROCESSING_STATUS.NEW]
       );
       if (result.rowCount == 0) {
@@ -71,7 +72,7 @@ export default class ProvisionRequestMgr {
     } catch (error) {
       console.error(
         'Error occured while trying to fetch new provision requests',
-        error.stack
+        error
       );
       return false;
     }
@@ -125,7 +126,10 @@ export default class ProvisionRequestMgr {
         });
       client.release();
     } catch (error) {
-      console.error(error.stack);
+      console.log(
+        'Error occured while updating provisioning request details',
+        error
+      );
       return false;
     }
   }
@@ -149,9 +153,9 @@ export default class ProvisionRequestMgr {
       }
       client.release();
     } catch (error) {
-      console.error(
+      console.log(
         'Error occured while fetching any pending  requests for delete ',
-        error.stack
+        error
       );
       return false;
     }
