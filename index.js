@@ -20,14 +20,18 @@ const app = express();
 
 const bree = new Bree({
   jobs: [
+    // {
+    //   name: 'sandboxProvisionerJob',
+    //   interval: '10s',
+    // },
+    // {
+    //   name: 'sandboxRefresherJob',
+    //   interval: '40s',
+    // },
     {
-      name: 'sandboxProvisionerJob',
-      interval: '10s',
-    },
-    {
-      name: 'sandboxRefresherJob',
-      interval: '40s',
-    },
+      name: 'importJob',
+      interval: '10s'
+    }
   ],
 });
 var port = process.env.PORT || 5000;
