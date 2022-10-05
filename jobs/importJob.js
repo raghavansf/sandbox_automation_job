@@ -1,5 +1,6 @@
 import AWS from 'aws-sdk';
 import {} from 'dotenv/config';
+import process from 'process';
 
 
 var s3  = new AWS.S3({
