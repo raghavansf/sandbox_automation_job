@@ -30,7 +30,8 @@ const bree = new Bree({
     // },
     {
       name: 'importJob',
-      interval: '10s'
+      interval: '10s',
+      closeWorkerAfterMs: 1800
     }
   ],
 });
