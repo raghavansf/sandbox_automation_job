@@ -18,7 +18,7 @@ async function refreshSandboxStatus() {
 
     if (
       'started' === sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.PROVISIONED == element.request_processing_status
+      REQUEST_PROCESSING_STATUS.PROVISIONED != element.request_processing_status
     ) {
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
