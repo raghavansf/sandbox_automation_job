@@ -5,6 +5,7 @@ export const REQUEST_PROCESSING_STATUS = {
   NEW: 'NEW',
   RENEW: 'RENEW',
   DELETE: 'DELETE',
+  COMPLETED: 'COMPLETED',
 };
 export const STATUS = {
   REQUESTED: 'REQUESTED',

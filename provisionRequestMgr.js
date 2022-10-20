@@ -21,14 +21,46 @@ const pgPool = new Pool({
 });
 
 export default class ProvisionRequestMgr {
+  async markProvisionRequestCompleted(requestId) {
+    try {
+      const client = await pgPool.connect();
+      const result = await client
+        .query(
+          `update provision_req_t set  request_processing_status=$1 where id=$2`,
+          [REQUEST_PROCESSING_STATUS.COMPLETED, requestId]
+        )
+        .then((result) => {
+          if (result.rowCount == 0) {
+            console.info(
+              'No ProvisionRequests found for ID.Something is Wrong !!!',
+              requestId
+            );
+          } else if (result.rowCount > 0) {
+            console.info(
+              'Provisioned Request Marked COMPLETED for  ID ',
+              requestId
+            );
+            return result;
+          }
+        });
+      client.release();
+    } catch (error) {
+      console.log(
+        'Error occured while fetching any pending  requests for update ',
+        error
+      );
+      return false;
+    }
+  }
   async findRequestInProgress() {
     try {
       const client = await pgPool.connect();
       const result = await client.query(
-        `select * from provision_req_t where request_processing_status IN ($1,$2) limit ${limitRowsCount}`,
+        `select * from provision_req_t where request_processing_status IN ($1,$2,$3) limit ${limitRowsCount}`,
         [
           REQUEST_PROCESSING_STATUS.INITIATED,
           REQUEST_PROCESSING_STATUS.PROVISIONED,
+          REQUEST_PROCESSING_STATUS.COMPLETED,
         ]
       );
       if (result.rowCount == 0) {

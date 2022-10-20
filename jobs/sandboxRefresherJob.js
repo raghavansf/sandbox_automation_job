@@ -8,24 +8,31 @@ async function refreshSandboxStatus() {
   const sandboxMgr = new SandboxMgr();
   const results = await provisionRequestMgr.findRequestInProgress();
 
-  for (const element of results.rows) {
-    console.log('Sandbox Status to be refreshed ', element.sandbox_id);
+  for (const provisionRequest of results.rows) {
+    console.log('Sandbox Status to be refreshed ', provisionRequest.sandbox_id);
     const sandboxDetails = await sandboxMgr.getSandboxDetail(
-      element.sandbox_id
+      provisionRequest.sandbox_id
     );
-    const provisionedRequest = JSON.parse(element.sandbox_details);
-    sandboxDetails.data.clientConfig = provisionedRequest.clientConfig;
+    const provisionedSandbox = JSON.parse(provisionRequest.sandbox_details);
+    sandboxDetails.data.clientConfig = provisionedSandbox.clientConfig;
 
     if (
       'started' === sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.PROVISIONED == element.request_processing_status
+      REQUEST_PROCESSING_STATUS.PROVISIONED ==
+        provisionRequest.request_processing_status
     ) {
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
-        provisionedRequest.clientConfig.clientID,
-        `${provisionedRequest.realm}_${provisionedRequest.instance}`
+        provisionedSandbox.clientConfig.clientID,
+        `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
       );
-
+      await sandboxMgr.configureSandboxWithCode(provisionedSandbox);
+      await sandboxMgr.configureSandboxWithUsers(
+        provisionRequest,
+        provisionedSandbox
+      );
+      await sandboxMgr.configureSandboxWithSiteImport(provisionedSandbox);
+      /*
       const configureSandboxWithCodePromise = () => {
         return new Promise(() => {
           sandboxMgr.configureSandboxWithCode(provisionedRequest);
@@ -42,17 +49,22 @@ async function refreshSandboxStatus() {
           )
         )
         .catch((error) => console.error('The configuration has failed', error));
+        */
 
-      //TODO:Uncomment below once other activities are completed ,  test !!!
-      //  await sandboxMgr.configureSandboxWithUsers(element,provisionedRequest);
-      //TODO: post successful update provision request with User details
-      // sandboxMgr.configureSandboxWithCode(provisionedRequest)
-      // await sandboxMgr.configureSandboxWithSiteImport(provisionedRequest);
+      //Update Provision Request to COMPLETED status so that it doesn't get picked up for any further processing
+      await provisionRequestMgr.updateProvisionRequestWithDetails(
+        provisionRequest.id,
+        sandboxDetails.data
+      );
+      await provisionRequestMgr.markProvisionRequestCompleted(
+        provisionRequest.id
+      );
+    } else if ('deleted' == sandboxDetails.data.state) {
+      await provisionRequestMgr.updateProvisionRequestWithDetails(
+        provisionRequest.id,
+        sandboxDetails.data
+      );
     }
-    await provisionRequestMgr.updateProvisionRequestWithDetails(
-      element.id,
-      sandboxDetails.data
-    );
   }
 
   process.exit();
