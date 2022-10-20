@@ -25,10 +25,25 @@ async function refreshSandboxStatus() {
         provisionedRequest.clientConfig.clientID,
         `${provisionedRequest.realm}_${provisionedRequest.instance}`
       );
+
+      const configureSandboxWithCodePromise = () => {
+        return new Promise(() => {
+          sandboxMgr.configureSandboxWithCode(provisionedRequest);
+        });
+      }
+      Promise.all([sandboxMgr.configureSandboxWithUsers(element,provisionedRequest),
+                   configureSandboxWithCodePromise,
+                   sandboxMgr.configureSandboxWithSiteImport(provisionedRequest)])
+                   .then(() => console.log('The Sandbox has been configured with Users, Site Import and Code'))
+                   .catch((error) => console.error('The configuration has failed', error));
+
+
+
       //TODO:Uncomment below once other activities are completed ,  test !!!
       //  await sandboxMgr.configureSandboxWithUsers(element,provisionedRequest);
       //TODO: post successful update provision request with User details
-      // await sandboxMgr.configureSandboxWithCode(provisionedRequest);
+      // sandboxMgr.configureSandboxWithCode(provisionedRequest)
+      // await sandboxMgr.configureSandboxWithSiteImport(provisionedRequest);
     }
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       element.id,

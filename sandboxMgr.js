@@ -1,5 +1,13 @@
 // Mgr class for all sandbox calls
 import axios from 'axios';
+import AWS from 'aws-sdk';
+import {} from 'dotenv/config';
+import process from 'process';
+import * as fs from 'fs';
+import auth_sfcc from 'sfcc-ci/lib/auth.js';
+import webDav from 'sfcc-ci/lib/webdav.js';
+
+
 import ClientMgr from './clientMgr.js';
 import { SANDBOX_RESOURCE_PROFILES } from './sandboxConstants.js';
 import { SANDBOX_WEBDAV_PERMISSIONS } from './sandboxConstants.js';
@@ -10,6 +18,7 @@ const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
 const API_SANDBOXES = API_BASE + '/sandboxes/';
 const OCAPI_SITE_IMPORT_URI = process.env.OCAPI_SITE_IMPORT_URI;
 const OCAPI_JOB_EXECUTION_STATUS_URI = process.env.OCAPI_JOB_EXECUTION_STATUS;
+const WEBDAV_INSTANCE_IMPEX = '/impex/src/instance';
 
 export default class SandboxMgr {
   async provisionNewSandbox(provisionRequest) {
@@ -54,9 +63,58 @@ export default class SandboxMgr {
       console.log('Error occured while provisioning new sandbox ', error);
     }
   }
-  async configureSandboxWithCode(sandboxDetails) {
-    //TODO:Manually upload code
 
+  configureSandboxWithCode(sandboxDetails) {
+    try {
+      // const clientMgr = new ClientMgr();
+      const clientCredentials = sandboxDetails.clientConfig;
+      const hostName = sandboxDetails.hostName;
+      clientCredentials.grantType = `grant_type=client_credentials`;
+      console.log('Client Credentials from Provisioned Sandbox ', clientCredentials);
+      // const clientAccessToken = await clientMgr.getAccessTokenByCredentials(
+      //   clientCredentials
+      // );
+
+      var s3 = new AWS.S3({
+        accessKeyId: process.env.NODE_ENV === 'development' ? process.env.AWS_ACCESS_KEY_ID : process.env.BUCKETEER_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.NODE_ENV === 'development' ? process.env.AWS_SECRET_ACCESS_KEY : process.env.BUCKETEER_AWS_SECRET_ACCESS_KEY,
+        region: 'eu-west-1',
+        s3ForcePathStyle: true
+      });
+
+      var params = {
+          Key: 'public/SFRA_CODE/SFRA_Sandbox.zip',
+          Bucket: process.env.NODE_ENV === 'development' ? process.env.STORAGE_BUCKET_NAME : process.env.BUCKETEER_BUCKET_NAME
+      };
+
+      auth_sfcc.auth(clientCredentials.clientID, clientCredentials.clientSecret, null, null, true);
+
+      const rs = s3.getObject(params).createReadStream();
+      const ws = fs.createWriteStream('SFRA_Sandbox.zip');
+      rs.pipe(ws);
+
+      var file = 'SFRA_Sandbox.zip';
+
+      setTimeout(() => {
+        webDav.postFile(hostName, WEBDAV_INSTANCE_IMPEX, file, auth_sfcc.getToken(), true, null, (err, res) => {
+            if (err) console.error('err ', err);
+            else console.log('PostFile has been successful');
+        });
+      }, 3600);
+
+      setTimeout(() => {
+        fs.unlink('SFRA_Sandbox.zip',function(err){
+            if(err) return console.error(err);
+            console.log('The local file has been deleted successfully');
+        });
+      }, 4800);
+
+    } catch(error) {
+      console.log('Error occured during Code Import', error);
+    }
+  }
+
+  async configureSandboxWithSiteImport(sandboxDetails) {
     try {
       const clientMgr = new ClientMgr();
       const clientCredentials = sandboxDetails.clientConfig;
@@ -77,35 +135,35 @@ export default class SandboxMgr {
           headers: { Authorization: `Bearer ${clientAccessToken}` },
         }
       );
+
       if (202 === jobExecutionResponse.status) {
         console.log(
           'SiteImport Job Launched for Execution',
           jobExecutionResponse.data.id
         );
         let jobStatus = jobExecutionResponse.data.status;
-        while ('PENDING' === jobStatus) {
-          const { data: response } = await axios.get(
-            `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
-            {
-              headers: { Authorization: `Bearer ${clientAccessToken}` },
+
+        const interval = setInterval(async () => {
+          if (jobStatus === 'PENDING') {
+            const { data: response } = await axios.get(
+              `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
+              {
+                headers: { Authorization: `Bearer ${clientAccessToken}` },
+              }
+            );
+            if (response.execution_status === 'finished' && (response.status == 'OK' || response.status == 'ERROR')) {
+              console.log('job execution completed ', response);
+              jobStatus = response.status;
+              clearInterval(interval);
+            } else {
+              setTimeout(function () {
+                console.log('Job execution Not Completed hence waiting ......', response.status);
+              }, 1000);
             }
-          );
-          if (
-            'finished' === response.execution_status &&
-            ('OK' == response.status || 'ERROR' == response.status)
-          ) {
-            console.log('job execution completed ', response);
-            jobStatus = response.status;
-          } else {
-            setTimeout(function () {
-              console.log(
-                'Job exceution Not Completed hence waiting ......',
-                response.status
-              );
-            }, 1000);
           }
-        }
+        }, 1800);
       }
+
     } catch (error) {
       console.log('Error occured during Site Import', error);
     }
