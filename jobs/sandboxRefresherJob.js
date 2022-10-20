@@ -18,7 +18,7 @@ async function refreshSandboxStatus() {
 
     if (
       'started' === sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.PROVISIONED ==
+      REQUEST_PROCESSING_STATUS.PROVISIONED !=
         provisionRequest.request_processing_status
     ) {
       const clientMgr = new ClientMgr();
