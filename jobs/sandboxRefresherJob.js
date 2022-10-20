@@ -18,7 +18,7 @@ async function refreshSandboxStatus() {
 
     if (
       'started' === sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.PROVISIONED != element.request_processing_status
+      REQUEST_PROCESSING_STATUS.PROVISIONED == element.request_processing_status
     ) {
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
@@ -30,14 +30,18 @@ async function refreshSandboxStatus() {
         return new Promise(() => {
           sandboxMgr.configureSandboxWithCode(provisionedRequest);
         });
-      }
-      Promise.all([sandboxMgr.configureSandboxWithUsers(element,provisionedRequest),
-                   configureSandboxWithCodePromise,
-                   sandboxMgr.configureSandboxWithSiteImport(provisionedRequest)])
-                   .then(() => console.log('The Sandbox has been configured with Users, Site Import and Code'))
-                   .catch((error) => console.error('The configuration has failed', error));
-
-
+      };
+      Promise.all([
+        sandboxMgr.configureSandboxWithUsers(element, provisionedRequest),
+        configureSandboxWithCodePromise,
+        sandboxMgr.configureSandboxWithSiteImport(provisionedRequest),
+      ])
+        .then(() =>
+          console.log(
+            'The Sandbox has been configured with Users, Site Import and Code'
+          )
+        )
+        .catch((error) => console.error('The configuration has failed', error));
 
       //TODO:Uncomment below once other activities are completed ,  test !!!
       //  await sandboxMgr.configureSandboxWithUsers(element,provisionedRequest);
