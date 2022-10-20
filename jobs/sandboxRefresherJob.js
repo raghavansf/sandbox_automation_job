@@ -27,11 +27,13 @@ async function refreshSandboxStatus() {
         `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
       );
       await sandboxMgr.configureSandboxWithCode(provisionedSandbox);
+      /*
       await sandboxMgr.configureSandboxWithUsers(
         provisionRequest,
         provisionedSandbox
       );
       await sandboxMgr.configureSandboxWithSiteImport(provisionedSandbox);
+      */
       /*
       const configureSandboxWithCodePromise = () => {
         return new Promise(() => {
@@ -52,14 +54,21 @@ async function refreshSandboxStatus() {
         */
 
       //Update Provision Request to COMPLETED status so that it doesn't get picked up for any further processing
+
       await provisionRequestMgr.updateProvisionRequestWithDetails(
         provisionRequest.id,
         sandboxDetails.data
       );
+      /*
       await provisionRequestMgr.markProvisionRequestCompleted(
         provisionRequest.id
       );
-    } else if ('deleted' == sandboxDetails.data.state) {
+      */
+    } else if (
+      'deleted' == sandboxDetails.data.state &&
+      REQUEST_PROCESSING_STATUS.COMPLETED !=
+        provisionRequest.request_processing_status
+    ) {
       await provisionRequestMgr.updateProvisionRequestWithDetails(
         provisionRequest.id,
         sandboxDetails.data

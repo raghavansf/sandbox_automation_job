@@ -81,6 +81,7 @@ export default class SandboxMgr {
         region: 'eu-west-1',
         s3ForcePathStyle: true,
       });
+      console.log('S3 Bucket Instance Successful');
 
       var params = {
         Key: 'public/SFRA_CODE/SFRA_Sandbox.zip',
@@ -97,6 +98,7 @@ export default class SandboxMgr {
         null,
         true
       );
+      console.log('Sfcc Authentication Successful');
 
       const rs = s3.getObject(params).createReadStream();
       const ws = fs.createWriteStream('SFRA_Sandbox.zip');
@@ -118,6 +120,7 @@ export default class SandboxMgr {
           }
         );
       }, 3600);
+      console.log('WebDAV File upload Successful');
 
       setTimeout(() => {
         fs.unlink('SFRA_Sandbox.zip', function (err) {
@@ -125,6 +128,7 @@ export default class SandboxMgr {
           console.log('Local File has been cleanedup post upload');
         });
       }, 4800);
+      console.log('Local file cleanup Successful');
     } catch (error) {
       console.log('Error occured during Code Upload', error);
     }
