@@ -2,10 +2,13 @@ import ClientMgr from '../clientMgr.js';
 import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import SandboxMgr from '../sandboxMgr.js';
 import { REQUEST_PROCESSING_STATUS } from '../constants.js';
+import { parentPort } from 'worker_threads';
+import ClientMgr from '../clientMgr.js';
 
 async function refreshSandboxStatus() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const sandboxMgr = new SandboxMgr();
+
   const results = await provisionRequestMgr.findRequestInProgress();
 
   for (const provisionRequest of results.rows) {
@@ -21,49 +24,24 @@ async function refreshSandboxStatus() {
       REQUEST_PROCESSING_STATUS.COMPLETED !=
         provisionRequest.request_processing_status
     ) {
+      // TODO : plug only Code Import , User enablement , Client Roles Updation
+      // Client Roles Update / Site Import / User creation/association
+
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
-        provisionedSandbox.clientConfig.clientID,
-        `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
-      );
-      await sandboxMgr.configureSandboxWithCode(provisionedSandbox);
-      /*
-      await sandboxMgr.configureSandboxWithUsers(
-        provisionRequest,
-        provisionedSandbox
+        provisionedRequest.clientConfig.clientID,
+        `${provisionedRequest.realm}_${provisionedRequest.instance}`
       );
       await sandboxMgr.configureSandboxWithSiteImport(provisionedSandbox);
-      */
-      /*
-      const configureSandboxWithCodePromise = () => {
-        return new Promise(() => {
-          sandboxMgr.configureSandboxWithCode(provisionedRequest);
-        });
-      };
-      Promise.all([
-        sandboxMgr.configureSandboxWithUsers(element, provisionedRequest),
-        configureSandboxWithCodePromise,
-        sandboxMgr.configureSandboxWithSiteImport(provisionedRequest),
-      ])
-        .then(() =>
-          console.log(
-            'The Sandbox has been configured with Users, Site Import and Code'
-          )
-        )
-        .catch((error) => console.error('The configuration has failed', error));
-        */
-
-      //Update Provision Request to COMPLETED status so that it doesn't get picked up for any further processing
-
+      // TODO : User creation / enablement ..
+      //TODO: Refactor ..
       await provisionRequestMgr.updateProvisionRequestWithDetails(
         provisionRequest.id,
         sandboxDetails.data
       );
-      /*
       await provisionRequestMgr.markProvisionRequestCompleted(
         provisionRequest.id
       );
-      */
     } else if (
       'deleted' == sandboxDetails.data.state &&
       REQUEST_PROCESSING_STATUS.COMPLETED !=
@@ -75,8 +53,6 @@ async function refreshSandboxStatus() {
       );
     }
   }
-
   process.exit();
 }
-
 refreshSandboxStatus();

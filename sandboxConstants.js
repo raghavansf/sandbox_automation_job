@@ -53,6 +53,6 @@ export const SANDBOX_OCAPI_SETTINGS = [
 ];
 
 export const SITE_ARCHIVE_PAYLOAD = {
-  file_name: 'site_export_data.zip',
+  file_name: 'SFRA_Sandbox.zip',
   mode: 'merge',
 };

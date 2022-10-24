@@ -16,20 +16,56 @@
 import Bree from 'bree';
 import Graceful from '@ladjs/graceful';
 import express from 'express';
+import * as fs from 'fs';
+import {} from 'dotenv/config';
+import AWS from 'aws-sdk';
+
 const app = express();
 
 const bree = new Bree({
   jobs: [
-    {
+    /*{
       name: 'sandboxProvisionerJob',
       interval: '10s',
-    },
+    },*/
     {
       name: 'sandboxRefresherJob',
-      interval: '40s',
-    }
+      interval: '20s',
+    },
   ],
 });
+app.use('/download', function (req, res) {
+  console.log('Downloading lastest Code version from S3....');
+  downloadFromS3();
+  res.json({ message: 'Code Version Downloaded Successfully!!!' });
+});
+function downloadFromS3() {
+  var s3 = new AWS.S3({
+    accessKeyId:
+      process.env.NODE_ENV === 'development'
+        ? process.env.AWS_ACCESS_KEY_ID
+        : process.env.BUCKETEER_AWS_ACCESS_KEY_ID,
+    secretAccessKey:
+      process.env.NODE_ENV === 'development'
+        ? process.env.AWS_SECRET_ACCESS_KEY
+        : process.env.BUCKETEER_AWS_SECRET_ACCESS_KEY,
+    region: process.env.STORAGE_REGION,
+    s3ForcePathStyle: true,
+  });
+  console.log('S3 Bucket Instance Successful');
+
+  var params = {
+    Key: 'public/SFRA_CODE/SFRA_Sandbox.zip',
+    Bucket:
+      process.env.NODE_ENV === 'development'
+        ? process.env.STORAGE_BUCKET_NAME
+        : process.env.BUCKETEER_BUCKET_NAME,
+  };
+  const rs = s3.getObject(params).createReadStream();
+  const ws = fs.createWriteStream('SFRA_Sandbox.zip');
+  rs.pipe(ws);
+}
+
 var port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Our JobApp is running on port ${port}`);

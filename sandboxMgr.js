@@ -1,11 +1,11 @@
 // Mgr class for all sandbox calls
 import axios from 'axios';
-import AWS from 'aws-sdk';
 import {} from 'dotenv/config';
 import process from 'process';
 import * as fs from 'fs';
 import auth_sfcc from 'sfcc-ci/lib/auth.js';
 import webDav from 'sfcc-ci/lib/webdav.js';
+import { default as FormData } from 'form-data';
 
 import ClientMgr from './clientMgr.js';
 import { SANDBOX_RESOURCE_PROFILES } from './sandboxConstants.js';
@@ -66,30 +66,16 @@ export default class SandboxMgr {
   async configureSandboxWithCode(sandboxDetails) {
     try {
       const clientCredentials = sandboxDetails.clientConfig;
-      const hostName = sandboxDetails.hostName;
+      const destinationLocation = `${sandboxDetails.hostName}`;
       clientCredentials.grantType = `grant_type=client_credentials`;
 
-      var s3 = new AWS.S3({
-        accessKeyId:
-          process.env.NODE_ENV === 'development'
-            ? process.env.AWS_ACCESS_KEY_ID
-            : process.env.BUCKETEER_AWS_ACCESS_KEY_ID,
-        secretAccessKey:
-          process.env.NODE_ENV === 'development'
-            ? process.env.AWS_SECRET_ACCESS_KEY
-            : process.env.BUCKETEER_AWS_SECRET_ACCESS_KEY,
-        region: 'eu-west-1',
-        s3ForcePathStyle: true,
-      });
-      console.log('S3 Bucket Instance Successful');
+      console.log('Sandbox details ', sandboxDetails);
 
-      var params = {
-        Key: 'public/SFRA_CODE/SFRA_Sandbox.zip',
-        Bucket:
-          process.env.NODE_ENV === 'development'
-            ? process.env.STORAGE_BUCKET_NAME
-            : process.env.BUCKETEER_BUCKET_NAME,
-      };
+      if (!fs.existsSync(process.env.CODE_VERSION)) {
+        console.log('File Not Exists hence skipping ....');
+        return;
+      }
+      console.log('File Exists and hence proceediing ..', destinationLocation);
 
       auth_sfcc.auth(
         clientCredentials.clientID,
@@ -98,37 +84,24 @@ export default class SandboxMgr {
         null,
         true
       );
-      console.log('Sfcc Authentication Successful');
+      console.log('SFCC Auth Successful', auth_sfcc.getToken());
 
-      const rs = s3.getObject(params).createReadStream();
-      const ws = fs.createWriteStream('SFRA_Sandbox.zip');
-      rs.pipe(ws);
-
-      var file = 'SFRA_Sandbox.zip';
-
-      setTimeout(() => {
-        webDav.postFile(
-          hostName,
-          WEBDAV_INSTANCE_IMPEX,
-          file,
-          auth_sfcc.getToken(),
-          true,
-          null,
-          (err, res) => {
-            if (err) console.error('err ', err);
-            else console.log('WebDAV PostFile is successful');
+      webDav.postFile(
+        sandboxDetails.hostName,
+        WEBDAV_INSTANCE_IMPEX,
+        process.env.CODE_VERSION,
+        auth_sfcc.getToken(),
+        true,
+        null,
+        (err, res) => {
+          if (err) console.error('err ', err);
+          else {
+            console.log('WebDAV PostFile is successful');
           }
-        );
-      }, 3600);
-      console.log('WebDAV File upload Successful');
+        }
+      );
 
-      setTimeout(() => {
-        fs.unlink('SFRA_Sandbox.zip', function (err) {
-          if (err) return console.error(err);
-          console.log('Local File has been cleanedup post upload');
-        });
-      }, 4800);
-      console.log('Local file cleanup Successful');
+      console.log('WebDAV File upload Successful');
     } catch (error) {
       console.log('Error occured during Code Upload', error);
     }

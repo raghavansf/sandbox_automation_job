@@ -9,7 +9,7 @@ import {} from 'dotenv/config';
 import SandboxMgr from '../sandboxMgr.js';
 import process from 'process';
 
-async function provisionSandBoxes() {
+export async function provisionSandBoxes() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const results = await provisionRequestMgr.findNewProvisionRequests();
 
