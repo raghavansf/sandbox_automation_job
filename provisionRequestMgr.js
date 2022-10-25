@@ -80,16 +80,15 @@ export default class ProvisionRequestMgr {
       return false;
     }
   }
-  async findRequestInProgress() {
+  async findRequestInProgress(
+    requestProcessingStatus1,
+    requestProcessingStatus2
+  ) {
     try {
       const client = await pgPool.connect();
       const result = await client.query(
-        `select * from provision_req_t where request_processing_status IN ($1,$2,$3) limit ${limitRowsCount}`,
-        [
-          REQUEST_PROCESSING_STATUS.INITIATED,
-          REQUEST_PROCESSING_STATUS.PROVISIONED,
-          REQUEST_PROCESSING_STATUS.COMPLETED,
-        ]
+        `select * from provision_req_t where request_processing_status IN ($1,$2) limit ${limitRowsCount}`,
+        [requestProcessingStatus1, requestProcessingStatus2]
       );
       if (result.rowCount == 0) {
         console.info('No InProgress requests  available for processing');

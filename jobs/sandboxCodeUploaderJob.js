@@ -13,7 +13,10 @@ async function uploadCodeToSandbox() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const sandboxMgr = new SandboxMgr();
 
-  const results = await provisionRequestMgr.findRequestInProgress();
+  const results = await provisionRequestMgr.findRequestInProgress(
+    REQUEST_PROCESSING_STATUS.INITIATED,
+    REQUEST_PROCESSING_STATUS.PROVISIONED
+  );
   if (results.rowCount <= 0) {
     console.log('No Pending request for Sandbox - Code Upload');
     if (parentPort) parentPort.postMessage('done');
@@ -28,11 +31,7 @@ async function uploadCodeToSandbox() {
   console.log('provisioned sandbox ', provisionedSandbox);
   sandboxDetails.data.clientConfig = provisionedSandbox.clientConfig;
 
-  if (
-    'started' === sandboxDetails.data.state &&
-    REQUEST_PROCESSING_STATUS.COMPLETED !=
-      provisionRequest.request_processing_status
-  ) {
+  if ('started' === sandboxDetails.data.state) {
     const provisionedSandbox = JSON.parse(provisionRequest.sandbox_details);
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       provisionRequest.id,
@@ -80,6 +79,10 @@ async function uploadCodeToSandbox() {
         }
       }
     );
+  } else {
+    console.log('No Pending Sandbox  for Code Provisioning !!!');
+    if (parentPort) parentPort.postMessage('done');
+    else process.exit(0);
   }
 }
 

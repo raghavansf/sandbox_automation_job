@@ -136,31 +136,28 @@ export default class SandboxMgr {
         );
         let jobStatus = jobExecutionResponse.data.status;
 
-        const interval = setInterval(async () => {
-          if (jobStatus === 'PENDING') {
-            const { data: response } = await axios.get(
-              `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
-              {
-                headers: { Authorization: `Bearer ${clientAccessToken}` },
-              }
-            );
-            if (
-              response.execution_status === 'finished' &&
-              (response.status == 'OK' || response.status == 'ERROR')
-            ) {
-              console.log('job execution completed ', response);
-              jobStatus = response.status;
-              clearInterval(interval);
-            } else {
-              setTimeout(function () {
-                console.log(
-                  'Job execution Not Completed hence waiting ......',
-                  response.status
-                );
-              }, 1000);
+        while (jobStatus === 'PENDING') {
+          const { data: response } = await axios.get(
+            `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
+            {
+              headers: { Authorization: `Bearer ${clientAccessToken}` },
             }
+          );
+          if (
+            response.execution_status === 'finished' &&
+            (response.status == 'OK' || response.status == 'ERROR')
+          ) {
+            console.log('job execution completed ', response);
+            jobStatus = response.status;
+          } else {
+            setTimeout(function () {
+              console.log(
+                'Job execution Not Completed hence waiting ......',
+                response.status
+              );
+            }, 1000);
           }
-        }, 1800);
+        }
       }
     } catch (error) {
       console.log('Error occured during Site Import', error);

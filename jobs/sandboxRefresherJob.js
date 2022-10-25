@@ -3,13 +3,15 @@ import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import SandboxMgr from '../sandboxMgr.js';
 import { REQUEST_PROCESSING_STATUS } from '../constants.js';
 import { parentPort } from 'worker_threads';
-import ClientMgr from '../clientMgr.js';
 
 async function refreshSandboxStatus() {
   const provisionRequestMgr = new ProvisionRequestMgr();
   const sandboxMgr = new SandboxMgr();
 
-  const results = await provisionRequestMgr.findRequestInProgress();
+  const results = await provisionRequestMgr.findRequestInProgress(
+    REQUEST_PROCESSING_STATUS.CODEPROVISIONED,
+    REQUEST_PROCESSING_STATUS.COMPLETED
+  );
 
   for (const provisionRequest of results.rows) {
     console.log('Sandbox Status to be refreshed ', provisionRequest.sandbox_id);
@@ -21,7 +23,7 @@ async function refreshSandboxStatus() {
 
     if (
       'started' === sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.COMPLETED !=
+      REQUEST_PROCESSING_STATUS.CODEPROVISIONED ==
         provisionRequest.request_processing_status
     ) {
       // TODO : plug only Code Import , User enablement , Client Roles Updation
@@ -29,9 +31,10 @@ async function refreshSandboxStatus() {
 
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
-        provisionedRequest.clientConfig.clientID,
-        `${provisionedRequest.realm}_${provisionedRequest.instance}`
+        provisionedSandbox.clientConfig.clientID,
+        `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
       );
+      // TODO: Need to look the Error
       await sandboxMgr.configureSandboxWithSiteImport(provisionedSandbox);
       // TODO : User creation / enablement ..
       //TODO: Refactor ..
@@ -39,12 +42,22 @@ async function refreshSandboxStatus() {
         provisionRequest.id,
         sandboxDetails.data
       );
-      await provisionRequestMgr.markProvisionRequestCompleted(
-        provisionRequest.id
+      await provisionRequestMgr.updateProvisionRequestWithStatus(
+        provisionRequest.id,
+        REQUEST_PROCESSING_STATUS.COMPLETED
       );
     } else if (
       'deleted' == sandboxDetails.data.state &&
-      REQUEST_PROCESSING_STATUS.COMPLETED !=
+      REQUEST_PROCESSING_STATUS.COMPLETED ==
+        provisionRequest.request_processing_status
+    ) {
+      await provisionRequestMgr.updateProvisionRequestWithDetails(
+        provisionRequest.id,
+        sandboxDetails.data
+      );
+    } else if (
+      'started' === sandboxDetails.data.state &&
+      REQUEST_PROCESSING_STATUS.INITIATED ===
         provisionRequest.request_processing_status
     ) {
       await provisionRequestMgr.updateProvisionRequestWithDetails(

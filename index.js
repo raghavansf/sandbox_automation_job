@@ -24,14 +24,15 @@ const app = express();
 
 const bree = new Bree({
   jobs: [
-    /*{
+    {
       name: 'sandboxProvisionerJob',
       interval: '10s',
-    },*/
+    },
     {
       name: 'sandboxRefresherJob',
-      interval: '20s',
+      interval: '40s',
     },
+    { name: 'sandboxCodeUploaderJob', interval: '20s' },
   ],
 });
 app.use('/download', function (req, res) {
