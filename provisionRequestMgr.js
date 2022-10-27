@@ -150,7 +150,7 @@ export default class ProvisionRequestMgr {
         requestProcessingStatus = REQUEST_PROCESSING_STATUS.INITIATED;
         status = STATUS.REQUESTED;
       } else if (sandboxDetails.state === 'started') {
-        requestProcessingStatus = REQUEST_PROCESSING_STATUS.PROVISIONED;
+        requestProcessingStatus = REQUEST_PROCESSING_STATUS.CODEPROVISIONED;
         status = STATUS.ACTIVE;
       } else if (sandboxDetails.state == 'deleted') {
         requestProcessingStatus = REQUEST_PROCESSING_STATUS.DELETED;

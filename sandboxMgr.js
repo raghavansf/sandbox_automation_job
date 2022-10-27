@@ -77,9 +77,11 @@ export default class SandboxMgr {
       );
 
       //trigger OCAPI Site Import Job with File name
+      let siteArchive = SITE_ARCHIVE_PAYLOAD;
+      siteArchive.file_name = process.env.CODE_VERSION;
       const jobExecutionResponse = await axios.post(
         `${sandboxDetails.links.ocapi}`.concat(OCAPI_SITE_IMPORT_URI),
-        SITE_ARCHIVE_PAYLOAD,
+        siteArchive,
         {
           headers: { Authorization: `Bearer ${clientAccessToken}` },
         }
