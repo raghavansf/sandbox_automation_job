@@ -26,16 +26,17 @@ async function refreshSandboxStatus() {
       REQUEST_PROCESSING_STATUS.CODEPROVISIONED ==
         provisionRequest.request_processing_status
     ) {
-      // TODO : plug only Code Import , User enablement , Client Roles Updation
-      // Client Roles Update / Site Import / User creation/association
-
       const clientMgr = new ClientMgr();
       await clientMgr.updateClientRoles(
         provisionedSandbox.clientConfig.clientID,
         `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
       );
-      // TODO: Need to look the Error
+
       await sandboxMgr.configureSandboxWithSiteImport(provisionedSandbox);
+      await sandboxMgr.configureSandboxWithUsers(
+        provisionRequest,
+        provisionedSandbox
+      );
       // TODO : User creation / enablement ..
       //TODO: Refactor ..
       await provisionRequestMgr.updateProvisionRequestWithDetails(

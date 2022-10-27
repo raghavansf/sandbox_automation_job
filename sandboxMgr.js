@@ -5,7 +5,6 @@ import process from 'process';
 import * as fs from 'fs';
 import auth_sfcc from 'sfcc-ci/lib/auth.js';
 import webDav from 'sfcc-ci/lib/webdav.js';
-import { default as FormData } from 'form-data';
 
 import ClientMgr from './clientMgr.js';
 import { SANDBOX_RESOURCE_PROFILES } from './sandboxConstants.js';
@@ -48,6 +47,7 @@ export default class SandboxMgr {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
+
       const sandboxDetails = sandboxInstanceResponse.data;
       sandboxDetails.clientConfig = {
         clientID: newClient.clientID,
@@ -60,50 +60,6 @@ export default class SandboxMgr {
       return sandboxDetails;
     } catch (error) {
       console.log('Error occured while provisioning new sandbox ', error);
-    }
-  }
-
-  async configureSandboxWithCode(sandboxDetails) {
-    try {
-      const clientCredentials = sandboxDetails.clientConfig;
-      const destinationLocation = `${sandboxDetails.hostName}`;
-      clientCredentials.grantType = `grant_type=client_credentials`;
-
-      console.log('Sandbox details ', sandboxDetails);
-
-      if (!fs.existsSync(process.env.CODE_VERSION)) {
-        console.log('File Not Exists hence skipping ....');
-        return;
-      }
-      console.log('File Exists and hence proceediing ..', destinationLocation);
-
-      auth_sfcc.auth(
-        clientCredentials.clientID,
-        clientCredentials.clientSecret,
-        null,
-        null,
-        true
-      );
-      console.log('SFCC Auth Successful', auth_sfcc.getToken());
-
-      webDav.postFile(
-        sandboxDetails.hostName,
-        WEBDAV_INSTANCE_IMPEX,
-        process.env.CODE_VERSION,
-        auth_sfcc.getToken(),
-        true,
-        null,
-        (err, res) => {
-          if (err) console.error('err ', err);
-          else {
-            console.log('WebDAV PostFile is successful');
-          }
-        }
-      );
-
-      console.log('WebDAV File upload Successful');
-    } catch (error) {
-      console.log('Error occured during Code Upload', error);
     }
   }
 
