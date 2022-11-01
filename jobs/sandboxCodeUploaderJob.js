@@ -1,4 +1,3 @@
-import { parentPort } from 'worker_threads';
 import {} from 'dotenv/config';
 import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import SandboxMgr from '../sandboxMgr.js';
@@ -21,8 +20,7 @@ async function uploadCodeToSandbox() {
   );
   if (results.rowCount <= 0) {
     console.log('No Pending request for Sandbox - Code Upload');
-    if (parentPort) parentPort.postMessage('done');
-    else process.exit(0);
+    process.exit(0);
   }
   const provisionRequest = results.rows[0];
   const sandboxDetails = await sandboxMgr.getSandboxDetail(
@@ -73,8 +71,7 @@ async function uploadCodeToSandbox() {
                 );
                 console.log('WebDAV Code Upload Successful', res);
                 //TODO: update Provision Request with  Status "SANDBOX_CODE_PROVISIONED"
-                if (parentPort) parentPort.postMessage('done');
-                else process.exit(0);
+                process.exit(0);
               }
             }
           );
@@ -92,8 +89,7 @@ async function uploadCodeToSandbox() {
     */
   } else {
     console.log('No Pending Sandbox  for Code Provisioning !!!');
-    if (parentPort) parentPort.postMessage('done');
-    else process.exit(0);
+    process.exit(0);
   }
 }
 
