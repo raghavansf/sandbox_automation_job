@@ -56,14 +56,14 @@ function downloadFromS3() {
   console.log('S3 Bucket Instance Successful');
 
   var params = {
-    Key: 'public/SFRA_CODE/SFRA_Sandbox.zip',
+    Key: `public/SFRA_CODE/${process.env.CODE_VERSION}`,
     Bucket:
       process.env.NODE_ENV === 'development'
         ? process.env.STORAGE_BUCKET_NAME
         : process.env.BUCKETEER_BUCKET_NAME,
   };
   const rs = s3.getObject(params).createReadStream();
-  const ws = fs.createWriteStream('SFRA_Sandbox.zip');
+  const ws = fs.createWriteStream(process.env.CODE_VERSION);
   rs.pipe(ws);
 }
 
