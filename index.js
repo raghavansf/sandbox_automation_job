@@ -30,9 +30,9 @@ const bree = new Bree({
     },
     {
       name: 'sandboxRefresherJob',
-      interval: '40s',
+      interval: '100s',
     },
-    { name: 'sandboxCodeUploaderJob', interval: '20s' },
+    { name: 'sandboxCodeUploaderJob', interval: '30s' },
   ],
 });
 app.use('/download', function (req, res) {
