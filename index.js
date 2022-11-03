@@ -30,7 +30,7 @@ const bree = new Bree({
     },
     {
       name: 'sandboxRefresherJob',
-      interval: '100s',
+      interval: '120s',
     },
     { name: 'sandboxCodeUploaderJob', interval: '50s' },
   ],
