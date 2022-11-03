@@ -26,13 +26,13 @@ const bree = new Bree({
   jobs: [
     {
       name: 'sandboxProvisionerJob',
-      interval: '10s',
+      interval: '100s',
     },
     {
       name: 'sandboxRefresherJob',
       interval: '100s',
     },
-    { name: 'sandboxCodeUploaderJob', interval: '30s' },
+    { name: 'sandboxCodeUploaderJob', interval: '50s' },
   ],
 });
 app.use('/download', function (req, res) {

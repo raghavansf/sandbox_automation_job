@@ -107,6 +107,7 @@ export default class SandboxMgr {
           ) {
             console.log('job execution completed ', response);
             jobStatus = response.status;
+            return jobStatus;
           } else {
             setTimeout(function () {
               console.log(

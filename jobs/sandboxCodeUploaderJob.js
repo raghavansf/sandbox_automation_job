@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import webDav from 'sfcc-ci/lib/webdav.js';
 import sfcc from 'sfcc-ci';
 import ClientMgr from '../clientMgr.js';
+import axios from 'axios';
 
 const WEBDAV_INSTANCE_IMPEX = '/impex/src/instance';
 
@@ -14,9 +15,8 @@ async function uploadCodeToSandbox() {
   const sandboxMgr = new SandboxMgr();
   const clientMgr = new ClientMgr();
 
-  const results = await provisionRequestMgr.findRequestInProgress(
-    REQUEST_PROCESSING_STATUS.INITIATED,
-    REQUEST_PROCESSING_STATUS.CODEPROVISIONED
+  const results = await provisionRequestMgr.findRequestByStatus(
+    REQUEST_PROCESSING_STATUS.INITIATED
   );
   if (results.rowCount <= 0) {
     console.log('No Pending request for Sandbox - Code Upload');
@@ -26,14 +26,14 @@ async function uploadCodeToSandbox() {
   const sandboxDetails = await sandboxMgr.getSandboxDetail(
     provisionRequest.sandbox_id
   );
-  console.log('Sandbox Details ', sandboxDetails);
   const provisionedSandbox = JSON.parse(provisionRequest.sandbox_details);
   sandboxDetails.data.clientConfig = provisionedSandbox.clientConfig;
 
   if ('started' === sandboxDetails.data.state) {
     if (!fs.existsSync(process.env.CODE_VERSION)) {
+      const result = await axios.get('http://localhost:5000/download');
       console.log('File Not Exists hence skipping ....');
-      return;
+      process.exit(0);
     }
 
     await provisionRequestMgr.updateProvisionRequestWithDetails(
@@ -78,17 +78,8 @@ async function uploadCodeToSandbox() {
         }
       }
     );
-    /*
-    auth_sfcc.auth(
-      clientCredentials.clientID,
-      clientCredentials.clientSecret,
-      null,
-      null,
-      true
-    );
-    */
   } else {
-    console.log('No Pending Sandbox  for Code Provisioning !!!');
+    console.log('No Pending Sandbox for Code Provisioning !!!');
     process.exit(0);
   }
 }
