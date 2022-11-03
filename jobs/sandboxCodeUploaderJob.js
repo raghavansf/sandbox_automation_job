@@ -31,6 +31,11 @@ async function uploadCodeToSandbox() {
   sandboxDetails.data.clientConfig = provisionedSandbox.clientConfig;
 
   if ('started' === sandboxDetails.data.state) {
+    if (!fs.existsSync(process.env.CODE_VERSION)) {
+      console.log('File Not Exists hence skipping ....');
+      return;
+    }
+
     await provisionRequestMgr.updateProvisionRequestWithDetails(
       provisionRequest.id,
       sandboxDetails.data
@@ -42,11 +47,6 @@ async function uploadCodeToSandbox() {
 
     const clientCredentials = provisionedSandbox.clientConfig;
 
-    console.log('Client Credentials', clientCredentials);
-    if (!fs.existsSync(process.env.CODE_VERSION)) {
-      console.log('File Not Exists hence skipping ....');
-      return;
-    }
     console.log('Provisioned Sandbox ', provisionedSandbox);
 
     sfcc.auth.auth(
