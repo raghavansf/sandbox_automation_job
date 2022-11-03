@@ -114,7 +114,7 @@ export default class SandboxMgr {
                 'Job execution Not Completed hence waiting ......',
                 response.status
               );
-            }, 10000);
+            }, 60000);
           }
         }
       }
