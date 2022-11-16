@@ -9,6 +9,8 @@ import ClientMgr from '../clientMgr.js';
 import axios from 'axios';
 
 const WEBDAV_INSTANCE_IMPEX = '/impex/src/instance';
+const CODE_ARCHIVE = 'SFRA_UPC_09_06_2022.zip';
+const CODE_ARCHIVE_NAME = 'SFRA_UPC_09_06_2022';
 
 async function uploadCodeToSandbox() {
   const provisionRequestMgr = new ProvisionRequestMgr();
@@ -36,10 +38,6 @@ async function uploadCodeToSandbox() {
       process.exit(0);
     }
 
-    await provisionRequestMgr.updateProvisionRequestWithDetails(
-      provisionRequest.id,
-      sandboxDetails.data
-    );
     await clientMgr.updateClientRoles(
       provisionedSandbox.clientConfig.clientID,
       `${provisionedSandbox.realm}_${provisionedSandbox.instance}`
@@ -48,39 +46,64 @@ async function uploadCodeToSandbox() {
     const clientCredentials = provisionedSandbox.clientConfig;
 
     console.log('Provisioned Sandbox ', provisionedSandbox);
-
+    /*
     sfcc.auth.auth(
       clientCredentials.clientID,
       clientCredentials.clientSecret,
       (err, token) => {
-        if (err) console.log('Error occuring during SFCC Auth Auth');
-        else {
-          webDav.postFile(
+        if (err) {
+          console.log('SFCC Auth Failure', err);
+        } else {
+          sfcc.instance.upload(
             provisionedSandbox.hostName,
-            WEBDAV_INSTANCE_IMPEX,
-            process.env.CODE_VERSION,
+            process.env.DATA_VERSION,
             token,
-            true,
             null,
             (err, res) => {
-              if (err) console.error('err ', err);
+              if (err) console.log('InstanceData Upload error');
               else {
-                provisionRequestMgr.updateProvisionRequestWithStatus(
-                  provisionRequest.id,
-                  REQUEST_PROCESSING_STATUS.CODEPROVISIONED
-                );
-                console.log('WebDAV Code Upload Successful', res);
-                //TODO: update Provision Request with  Status "SANDBOX_CODE_PROVISIONED"
-                process.exit(0);
+                console.log('InstanceData Upload Successful');
               }
             }
           );
         }
       }
     );
-  } else {
-    console.log('No Pending Sandbox for Code Provisioning !!!');
-    process.exit(0);
+    */
+
+    sfcc.auth.auth(
+      clientCredentials.clientID,
+      clientCredentials.clientSecret,
+      (err, token) => {
+        if (err) {
+          console.log('SFCC Auth Failure', err);
+        } else {
+          sfcc.code.deploy(
+            provisionedSandbox.hostName,
+            CODE_ARCHIVE,
+            token,
+            null,
+            (err, res) => {
+              if (err) console.log('CodeArchive Upload error');
+              else {
+                console.log('CodeArchive Upload Successful');
+                sfcc.code.activate(
+                  provisionedSandbox.hostName,
+                  CODE_ARCHIVE_NAME,
+                  token,
+                  (err, res) => {
+                    if (err) console.log('Code Activation failed', err);
+                    else {
+                      console.log('Code Activation Successful', res);
+                    }
+                  }
+                );
+              }
+            }
+          );
+        }
+      }
+    );
   }
 }
 
