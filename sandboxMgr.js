@@ -68,17 +68,13 @@ export default class SandboxMgr {
       const clientMgr = new ClientMgr();
       const clientCredentials = sandboxDetails.clientConfig;
       clientCredentials.grantType = `grant_type=client_credentials`;
-      console.log(
-        'Client Credentials from Provisioned Sandbox ',
-        clientCredentials
-      );
       const clientAccessToken = await clientMgr.getAccessTokenByCredentials(
         clientCredentials
       );
 
       //trigger OCAPI Site Import Job with File name
       let siteArchive = SITE_ARCHIVE_PAYLOAD;
-      siteArchive.file_name = process.env.CODE_VERSION;
+      siteArchive.file_name = process.env.DATA_VERSION;
       const jobExecutionResponse = await axios.post(
         `${sandboxDetails.links.ocapi}`.concat(OCAPI_SITE_IMPORT_URI),
         siteArchive,
@@ -108,18 +104,22 @@ export default class SandboxMgr {
             console.log('job execution completed ', response);
             jobStatus = response.status;
             return jobStatus;
-          } else {
+          }
+          /*else {
             setTimeout(function () {
               console.log(
                 'Job execution Not Completed hence waiting ......',
                 response.status
               );
             }, 60000);
+            
           }
+          */
         }
       }
     } catch (error) {
       console.log('Error occured during Site Import', error);
+      throw error;
     }
   }
   async configureSandboxWithUsers(provisionRequestDetails, sandboxDetails) {
