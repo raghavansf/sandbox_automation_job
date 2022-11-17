@@ -53,6 +53,8 @@ function invokeProvisioningSteps(request, asyncLoopCallback) {
         async.apply(isSandboxStarted, request),
         uploadData,
         importData,
+        runProductIndex,
+        runContentIndex,
         uploadCode,
         activateCode,
         updateClientRoles,
@@ -73,6 +75,46 @@ function invokeProvisioningSteps(request, asyncLoopCallback) {
   } catch (error) {}
 }
 
+function runContentIndex(request, provisionedSandbox, callback) {
+  console.log('ContenIndexing Started for Sandbox  ', request.sandbox_id);
+  const sandboxMgr = new SandboxMgr();
+  sandboxMgr
+    .runIndexJob(process.env.OCAPI_CONTENTINDEX_URI, provisionedSandbox)
+    .then((result) => {
+      console.log('ContenIndexing Completed for Sandbox ', request.sandbox_id);
+      callback(null, request, provisionedSandbox);
+    })
+    .catch((err) => {
+      console.log(
+        'Error Occured while ContentIndexing in Sandbox',
+        request.sandbox_id
+      );
+      callback(
+        `SandboxProvision failed in ContenIndexing for Sandbox Id - ${request.sandbox_id}`
+      );
+    });
+}
+
+function runProductIndex(request, provisionedSandbox, callback) {
+  console.log('ProductIndexing Started for Sandbox  ', request.sandbox_id);
+  const sandboxMgr = new SandboxMgr();
+  sandboxMgr
+    .runIndexJob(process.env.OCAPI_PRODUCTINDEX_URI, provisionedSandbox)
+    .then((result) => {
+      console.log('ProductIndexing Completed for Sandbox ', request.sandbox_id);
+      callback(null, request, provisionedSandbox);
+    })
+    .catch((err) => {
+      console.log(
+        'Error Occured while running ProductIndexing  Sandbox',
+        request.sandbox_id
+      );
+      callback(
+        `SandboxProvision failed in ProductIndexing for Sandbox Id - ${request.sandbox_id}`
+      );
+    });
+}
+
 function createUsers(request, provisionedSandbox, callback) {
   console.log('Users Creation Started for Sandbox  ', request.sandbox_id);
   const sandboxMgr = new SandboxMgr();
@@ -84,7 +126,7 @@ function createUsers(request, provisionedSandbox, callback) {
     });
 }
 
-function updateClientRoles(request, provisionedSandbox, status, callback) {
+function updateClientRoles(request, provisionedSandbox, callback) {
   console.log('ClientRoles  Updation started for Sandbox', request.sandbox_id);
   const clientMgr = new ClientMgr();
   clientMgr
@@ -108,7 +150,7 @@ function importData(request, provisionedSandbox, callback) {
     .configureSandboxWithSiteImport(provisionedSandbox)
     .then((result) => {
       console.log('SiteImport Completed for Sandbox ', request.sandbox_id);
-      callback(null, request, provisionedSandbox, 'SUCCESS');
+      callback(null, request, provisionedSandbox);
     })
     .catch((err) => {
       console.log(
@@ -154,7 +196,7 @@ function uploadData(request, status, callback) {
   );
 }
 
-function uploadCode(request, provisionedSandbox, status, callback) {
+function uploadCode(request, provisionedSandbox, callback) {
   console.log('Code  Uploading Started for Sandbox', request.sandbox_id);
   const clientCredentials = provisionedSandbox.clientConfig;
   sfcc.auth.auth(
@@ -211,7 +253,7 @@ function activateCode(request, provisionedSandbox, callback) {
                 'Activating Code Completed for Sandbox',
                 request.sandbox_id
               );
-              callback(null, request, provisionedSandbox, 'SUCCESS');
+              callback(null, request, provisionedSandbox);
             }
           }
         );

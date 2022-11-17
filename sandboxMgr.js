@@ -16,6 +16,7 @@ const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
 const API_SANDBOXES = API_BASE + '/sandboxes/';
 const OCAPI_SITE_IMPORT_URI = process.env.OCAPI_SITE_IMPORT_URI;
 const OCAPI_JOB_EXECUTION_STATUS_URI = process.env.OCAPI_JOB_EXECUTION_STATUS;
+const OCAPI_PRODUCTINDEX_URI = process.env.OCAPI_PRODUCTINDEX_URI;
 const WEBDAV_INSTANCE_IMPEX = '/impex/src/instance';
 
 export default class SandboxMgr {
@@ -63,6 +64,58 @@ export default class SandboxMgr {
     }
   }
 
+  // ReIndex OCAPI Job launch
+
+  async runIndexJob(jobId, sandboxDetails) {
+    try {
+      const clientMgr = new ClientMgr();
+      const clientCredentials = sandboxDetails.clientConfig;
+      clientCredentials.grantType = `grant_type=client_credentials`;
+      const clientAccessToken = await clientMgr.getAccessTokenByCredentials(
+        clientCredentials
+      );
+
+      const jobExecutionResponse = await axios.post(
+        `${sandboxDetails.links.ocapi}`
+          .concat(jobId)
+          .concat(`?client_id=${clientCredentials.clientID}`),
+        { site_scope: ['RefArch', 'RefArchGlobal'] },
+        {
+          headers: { Authorization: `Bearer ${clientAccessToken}` },
+        }
+      );
+
+      if (202 === jobExecutionResponse.status) {
+        console.log(
+          'RunIndex Job Launched for Execution',
+          jobExecutionResponse.data.id
+        );
+        let jobStatus = jobExecutionResponse.data.status;
+
+        while (jobStatus === 'PENDING') {
+          const { data: response } = await axios.get(
+            `${sandboxDetails.links.ocapi}${jobId}/${jobExecutionResponse.data.id}`,
+
+            {
+              headers: { Authorization: `Bearer ${clientAccessToken}` },
+            }
+          );
+          if (
+            response.execution_status === 'finished' &&
+            (response.status == 'OK' || response.status == 'ERROR')
+          ) {
+            console.log('RunIndex Job execution completed ', response);
+            jobStatus = response.status;
+            return jobStatus;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Error occured during RunIndex', error);
+      throw error;
+    }
+  }
+
   async configureSandboxWithSiteImport(sandboxDetails) {
     try {
       const clientMgr = new ClientMgr();
@@ -105,16 +158,6 @@ export default class SandboxMgr {
             jobStatus = response.status;
             return jobStatus;
           }
-          /*else {
-            setTimeout(function () {
-              console.log(
-                'Job execution Not Completed hence waiting ......',
-                response.status
-              );
-            }, 60000);
-            
-          }
-          */
         }
       }
     } catch (error) {
