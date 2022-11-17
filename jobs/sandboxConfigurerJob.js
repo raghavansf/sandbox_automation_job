@@ -171,7 +171,7 @@ function uploadCode(request, provisionedSandbox, status, callback) {
           null,
           (err, res) => {
             if (err) {
-              console.log('Error occured while Uploading Code');
+              console.log('Error occured while Uploading Code', err);
             } else {
               console.log(
                 'Code Upload  Completed for Sandbox',
