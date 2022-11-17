@@ -32,6 +32,7 @@ export default class ClientMgr {
         }
         newUserPayload.roleTenantFilter = roleTenantFilters;
         */
+
         const userCreationResponse = await axios.post(
           USER_ENDPOINT,
           newUserPayload,
