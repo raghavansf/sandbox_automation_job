@@ -15,9 +15,6 @@ import { SITE_ARCHIVE_PAYLOAD } from './sandboxConstants.js';
 const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
 const API_SANDBOXES = API_BASE + '/sandboxes/';
 const OCAPI_SITE_IMPORT_URI = process.env.OCAPI_SITE_IMPORT_URI;
-const OCAPI_JOB_EXECUTION_STATUS_URI = process.env.OCAPI_JOB_EXECUTION_STATUS;
-const OCAPI_PRODUCTINDEX_URI = process.env.OCAPI_PRODUCTINDEX_URI;
-const WEBDAV_INSTANCE_IMPEX = '/impex/src/instance';
 
 export default class SandboxMgr {
   async provisionNewSandbox(provisionRequest) {
@@ -145,7 +142,7 @@ export default class SandboxMgr {
 
         while (jobStatus === 'PENDING') {
           const { data: response } = await axios.get(
-            `${sandboxDetails.links.ocapi}${OCAPI_JOB_EXECUTION_STATUS_URI}/${jobExecutionResponse.data.id}`,
+            `${sandboxDetails.links.ocapi}${OCAPI_SITE_IMPORT_URI}/${jobExecutionResponse.data.id}`,
             {
               headers: { Authorization: `Bearer ${clientAccessToken}` },
             }
