@@ -182,6 +182,9 @@ function uploadData(request, status, callback) {
           (err, res) => {
             if (err) {
               console.log('Data Upload to Sandbox Failed', err);
+              callback(
+                `${request.sandbox_id} Not Proceeding for Provisioning since DataUpload Failed`
+              );
             } else {
               console.log(
                 'SiteData Upload Completed for Sandbox',
@@ -214,6 +217,9 @@ function uploadCode(request, provisionedSandbox, callback) {
           (err, res) => {
             if (err) {
               console.log('Error occured while Uploading Code', err);
+              callback(
+                `${request.sandbox_id} Not Proceeding for Provisioning since CodeUpload Failed`
+              );
             } else {
               console.log(
                 'Code Upload  Completed for Sandbox',
