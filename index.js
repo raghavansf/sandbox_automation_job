@@ -30,7 +30,7 @@ const bree = new Bree({
     },
     {
       name: 'codedataDownloaderJob',
-      interval: '300s',
+      interval: '3600s',
     },
     { name: 'sandboxConfigurerJob', interval: '150s' },
   ],
