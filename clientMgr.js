@@ -5,6 +5,7 @@ import { USER_CREATION_PAYLOAD } from './payloadConstants.js';
 import { CLIENT_CREATION_PAYLOAD } from './payloadConstants.js';
 import { USER_ACTIVATION_PAYLOAD } from './payloadConstants.js';
 import { ADMIN_CLIENT_CREDENTIALS_PAYLOAD } from './payloadConstants.js';
+import qs from 'qs';
 
 const ACCOUNTMANAGER_TOKEN =
   process.env.ACCOUNT_MANAGER_HOST + process.env.ACCOUNT_MANAGER_TOKEN_PATH;
@@ -15,6 +16,54 @@ const UPDATE_API_CLIENT =
 const USER_ENDPOINT = process.env.ACCOUNT_MANAGER_HOST + process.env.USERS_URI;
 
 export default class ClientMgr {
+  async updateConnectedAppWithSandboxDetails(requestId, provisionedSandbox) {
+    try {
+      const accessToken = await this.getConnectedAppToken();
+      const responseData = {};
+      responseData.Status__c = 'success';
+      responseData.message__c = provisionedSandbox;
+      const { data: response } = await axios.patch(
+        `${process.env.CONNECTEDAPP_SANDBOX_UPDATE_URI}${requestId}`,
+        responseData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log('Response from connected app', response);
+    } catch (error) {
+      console.log('Error occured while updating status to ConnectedApp', error);
+    }
+  }
+  async getConnectedAppToken() {
+    try {
+      const { data: response } = await axios({
+        method: 'POST',
+        url: process.env.CONNECTEDAPP_TOKEN_URI,
+        withCredentials: true,
+        crossdomain: true,
+        data: qs.stringify({
+          username: process.env.CONNECTEDAPP_USERNAME,
+          password: process.env.CONNECTEDAPP_PASSWORD,
+          client_id: process.env.CONNECTEDAPP_CLIENTID,
+          client_secret: process.env.CONNECTEDAPP_CLIENTSECRET,
+          grant_type: process.env.CONNECTEDAPP_GRANTTYPE,
+        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      return response.access_token;
+    } catch (error) {
+      console.log(
+        'Error occured while getting Access token for Connected App',
+        error
+      );
+    }
+  }
   async createUsers(usersToCreate) {
     try {
       const adminAccessToken = await this.getAccessToken();

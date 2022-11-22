@@ -59,6 +59,7 @@ function invokeProvisioningSteps(request, asyncLoopCallback) {
         activateCode,
         updateClientRoles,
         createUsers,
+        updateSandboxStatus,
         updateStatus,
       ],
       function (err) {
@@ -122,7 +123,27 @@ function createUsers(request, provisionedSandbox, callback) {
     .configureSandboxWithUsers(request, provisionedSandbox)
     .then((result) => {
       console.log('Users Creation Completed for Sandbox  ', request.sandbox_id);
+      callback(null, request, provisionedSandbox);
+    });
+}
+
+function updateSandboxStatus(request, provisionedSandbox, callback) {
+  console.log('AppStatus Update Started for Sandbox  ', request.sandbox_id);
+  const clientMgr = new ClientMgr();
+  clientMgr
+    .updateConnectedAppWithSandboxDetails(
+      request.id,
+      JSON.stringify(provisionedSandbox)
+    )
+    .then((result) => {
+      console.log(
+        'App Status Updated Successfully for Sandbox',
+        request.sandbox_id
+      );
       callback(null, request);
+    })
+    .catch((error) => {
+      console.log('Error occured while updating AppStatus');
     });
 }
 
