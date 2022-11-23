@@ -74,13 +74,12 @@ export default class ClientMgr {
         newUserPayload.lastName = user.lastName;
 
         //TODO: Commented to see if User display happening in Account Manager
-        /*
+
         let roleTenantFilters = '';
         for (const role of USER_CREATION_PAYLOAD.roles) {
           roleTenantFilters += `${role}:${user.sandboxRealmInstance};`;
         }
         newUserPayload.roleTenantFilter = roleTenantFilters;
-        */
 
         const userCreationResponse = await axios.post(
           USER_ENDPOINT,
