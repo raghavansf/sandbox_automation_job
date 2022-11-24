@@ -8,6 +8,8 @@ import ProvisionRequestMgr from '../provisionRequestMgr.js';
 import {} from 'dotenv/config';
 import SandboxMgr from '../sandboxMgr.js';
 import process from 'process';
+import ClientMgr from '../clientMgr.js';
+import { REQUEST_PROCESSING_STATUS } from '../constants.js';
 
 export async function provisionSandBoxes() {
   const provisionRequestMgr = new ProvisionRequestMgr();
@@ -25,23 +27,45 @@ export async function provisionSandBoxes() {
 
   for (const element of results.rows) {
     console.log('Sandbox provisioning starting for Request- ', element.id);
+
     const provisionRequest = {
       id: element.id,
       clientID: process.env.ADMIN_CLIENT_ID,
     };
 
-    const sandboxMgr = new SandboxMgr();
-    const sandboxDetails = await sandboxMgr.provisionNewSandbox(
-      provisionRequest
-    );
-    console.log(
-      'Sandbox provisioning request initiation completed for Request-',
-      element.id
-    );
-    await provisionRequestMgr.updateProvisionRequestWithDetails(
-      provisionRequest.id,
-      sandboxDetails
-    );
+    const clientMgr = new ClientMgr();
+    const userExists = await clientMgr.isUserExists(element.email_address);
+
+    if (userExists) {
+      console.log(
+        'User Already exists hence not proceeding for Sandbox Proivisoning'
+      );
+      await provisionRequestMgr.updateProvisionRequestWithStatus(
+        provisionRequest.id,
+        REQUEST_PROCESSING_STATUS.NOTPROVISIONED
+      );
+      await clientMgr.updateConnectedAppWithSandboxDetails(
+        provisionRequest.id,
+        {
+          status: `Sandbox Not Provisioned Since User ${element.email_address} Already Exists`,
+        }
+      );
+    } else {
+      const sandboxMgr = new SandboxMgr();
+      const sandboxDetails = await sandboxMgr.provisionNewSandbox(
+        provisionRequest
+      );
+
+      console.log(
+        'Sandbox provisioning request initiation completed for Request-',
+        element.id
+      );
+
+      await provisionRequestMgr.updateProvisionRequestWithDetails(
+        provisionRequest.id,
+        sandboxDetails
+      );
+    }
   }
 
   process.exit();

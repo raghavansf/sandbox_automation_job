@@ -16,6 +16,22 @@ const UPDATE_API_CLIENT =
 const USER_ENDPOINT = process.env.ACCOUNT_MANAGER_HOST + process.env.USERS_URI;
 
 export default class ClientMgr {
+  async isUserExists(loginEmail) {
+    let userExists = true;
+    try {
+      const adminAccessToken = await this.getAccessToken();
+      const { data: response } = await axios.get(
+        `${USER_ENDPOINT}/search/findByLogin?login=${loginEmail}`,
+        {
+          headers: { Authorization: `Bearer ${adminAccessToken}` },
+        }
+      );
+    } catch (error) {
+      console.log('Unable to find User By Login', error);
+      userExists = false;
+    }
+    return userExists;
+  }
   async updateConnectedAppWithSandboxDetails(requestId, provisionedSandbox) {
     try {
       const accessToken = await this.getConnectedAppToken();
@@ -73,13 +89,13 @@ export default class ClientMgr {
         newUserPayload.firstName = user.firstName;
         newUserPayload.lastName = user.lastName;
 
-        //TODO: Commented to see if User display happening in Account Manager
-
         let roleTenantFilters = '';
-        for (const role of USER_CREATION_PAYLOAD.roles) {
-          roleTenantFilters += `${role}:${user.sandboxRealmInstance};`;
+        for (const roleTenant of USER_CREATION_PAYLOAD.roleTenantFilter) {
+          roleTenantFilters += `${roleTenant}:${user.sandboxRealmInstance};`;
         }
         newUserPayload.roleTenantFilter = roleTenantFilters;
+
+        console.log('New User Payload ', newUserPayload);
 
         const userCreationResponse = await axios.post(
           USER_ENDPOINT,

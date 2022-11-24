@@ -9,7 +9,7 @@ export const USER_CREATION_PAYLOAD = {
   primaryOrganization: process.env.TRIAL_SANDBOX_ORG_ID,
   userState: 'ENABLED',
   password: 'Salesforce@2022',
-  roleTenantFilter: {},
+  roleTenantFilter: ['ECOM_ADMIN', 'SLAS_ORGANIZATION_ADMIN'],
 };
 
 export const CLIENT_CREATION_PAYLOAD = {
