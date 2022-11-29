@@ -36,7 +36,7 @@ export default class ClientMgr {
     try {
       const accessToken = await this.getConnectedAppToken();
       const responseData = {};
-      responseData.Status__c = 'success';
+      responseData.Status__c = 'SANDBOX_PROVISIONED';
       responseData.message__c = provisionedSandbox;
       const { data: response } = await axios.patch(
         `${process.env.CONNECTEDAPP_SANDBOX_UPDATE_URI}${requestId}`,

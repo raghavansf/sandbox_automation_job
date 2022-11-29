@@ -47,7 +47,8 @@ export async function provisionSandBoxes() {
       await clientMgr.updateConnectedAppWithSandboxDetails(
         provisionRequest.id,
         {
-          status: `Sandbox Not Provisioned Since User ${element.email_address} Already Exists`,
+          Status__c: 'SANDBOX_NOT_PROVISIONED',
+          message__c: `Sandbox Not Provisioned Since User ${element.email_address} Already Exists`,
         }
       );
     } else {
