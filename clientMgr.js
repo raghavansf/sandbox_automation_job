@@ -32,15 +32,12 @@ export default class ClientMgr {
     }
     return userExists;
   }
-  async updateConnectedAppWithSandboxDetails(requestId, provisionedSandbox) {
+  async updateConnectedAppWithSandboxDetails(requestId, sandboxStatus) {
     try {
       const accessToken = await this.getConnectedAppToken();
-      const responseData = {};
-      responseData.Status__c = 'SANDBOX_PROVISIONED';
-      responseData.message__c = provisionedSandbox;
       const { data: response } = await axios.patch(
         `${process.env.CONNECTEDAPP_SANDBOX_UPDATE_URI}${requestId}`,
-        responseData,
+        sandboxStatus,
         {
           headers: {
             'Content-Type': 'application/json',

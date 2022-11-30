@@ -131,10 +131,10 @@ function updateSandboxStatus(request, provisionedSandbox, callback) {
   console.log('AppStatus Update Started for Sandbox  ', request.sandbox_id);
   const clientMgr = new ClientMgr();
   clientMgr
-    .updateConnectedAppWithSandboxDetails(
-      request.id,
-      JSON.stringify(provisionedSandbox)
-    )
+    .updateConnectedAppWithSandboxDetails(request.id, {
+      Status__c: 'SANDBOX_PROVISIONED',
+      message__c: JSON.stringify(provisionedSandbox),
+    })
     .then((result) => {
       console.log(
         'App Status Updated Successfully for Sandbox',
