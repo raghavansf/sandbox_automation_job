@@ -29,6 +29,9 @@ import SandboxMgr from '../sandboxMgr.js';
         clientName: 'Sandbox Trial',
       },
     };
-    sandboxMgr.runIndexJob(sandboxDetails);
+    const eolDate = new Date(sandboxDetails.eol);
+    console.log(
+      `${eolDate.getMonth() + 1}/${eolDate.getDate()}/${eolDate.getFullYear()}`
+    );
   } catch (error) {}
 })();

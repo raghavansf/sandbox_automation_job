@@ -130,10 +130,18 @@ function createUsers(request, provisionedSandbox, callback) {
 function updateSandboxStatus(request, provisionedSandbox, callback) {
   console.log('AppStatus Update Started for Sandbox  ', request.sandbox_id);
   const clientMgr = new ClientMgr();
+  const eolDate = new Date(provisionedSandbox.eol);
+
   clientMgr
     .updateConnectedAppWithSandboxDetails(request.id, {
       Status__c: 'SANDBOX_PROVISIONED',
       message__c: JSON.stringify(provisionedSandbox),
+      ClientId__c: provisionedSandbox.clientConfig.clientID,
+      ClientSecret__c: provisionedSandbox.clientConfig.clientSecret,
+      Eol__c: `${
+        eolDate.getMonth() + 1
+      }/${eolDate.getDate()}/${eolDate.getFullYear()}`,
+      sandboxURL__c: provisionedSandbox.links.bm,
     })
     .then((result) => {
       console.log(
