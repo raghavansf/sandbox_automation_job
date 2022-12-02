@@ -13,7 +13,7 @@ import { SANDBOX_OCAPI_SETTINGS } from './sandboxConstants.js';
 import { SITE_ARCHIVE_PAYLOAD } from './sandboxConstants.js';
 
 const API_BASE = process.env.ADMIN_API_HOST + '/api/v1';
-const API_SANDBOXES = API_BASE + '/sandboxes/';
+const API_SANDBOXES = API_BASE + '/sandboxes';
 const OCAPI_SITE_IMPORT_URI = process.env.OCAPI_SITE_IMPORT_URI;
 
 export default class SandboxMgr {
