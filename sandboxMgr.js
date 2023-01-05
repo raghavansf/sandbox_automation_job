@@ -186,7 +186,7 @@ export default class SandboxMgr {
     try {
       const accessToken = await clientMgr.getAccessToken();
       const { data: sandboxDetails } = await axios.get(
-        `${API_SANDBOXES}${sandboxId}`,
+        `${API_SANDBOXES}/${sandboxId}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
