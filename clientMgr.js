@@ -85,6 +85,7 @@ export default class ClientMgr {
         newUserPayload.mail = user.mail;
         newUserPayload.firstName = user.firstName;
         newUserPayload.lastName = user.lastName;
+        newUserPayload.displayName = `${user.firstName} ${user.lastName}`;
 
         let roleTenantFilters = '';
         for (const roleTenant of USER_CREATION_PAYLOAD.roleTenantFilter) {
@@ -93,6 +94,8 @@ export default class ClientMgr {
         newUserPayload.roleTenantFilter = roleTenantFilters;
 
         console.log('New User Payload ', newUserPayload);
+
+        /*
 
         const userCreationResponse = await axios.post(
           USER_ENDPOINT,

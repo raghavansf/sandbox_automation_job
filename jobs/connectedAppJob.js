@@ -12,8 +12,10 @@ import ClientMgr from '../clientMgr.js';
       ],
     };
     const clientMgr = new ClientMgr();
-    clientMgr.isUserExists('rsrinivasa@salesforce.com');
-    clientMgr.createUsers(usersToCreate);
+    const connectedAppToken = await clientMgr.getConnectedAppToken();
+    console.log('Connected App Token', connectedAppToken);
+    //  clientMgr.isUserExists('rsrinivasa@salesforce.com');
+    // clientMgr.createUsers(usersToCreate);
   } catch (error) {
     console.log('Error occured while updating connected app ', error);
   }
