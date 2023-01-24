@@ -95,8 +95,6 @@ export default class ClientMgr {
 
         console.log('New User Payload ', newUserPayload);
 
-        /*
-
         const userCreationResponse = await axios.post(
           USER_ENDPOINT,
           newUserPayload,
